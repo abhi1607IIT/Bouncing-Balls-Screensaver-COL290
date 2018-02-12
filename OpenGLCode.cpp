@@ -6,6 +6,87 @@
 using namespace std;
 #define pi 3.14159
 
+class Ball
+{
+    GLfloat ballRadius;
+    GLfloat ballX;
+    GLfloat ballY;
+    GLfloat ballZ;
+    GLfloat vx,vy,vz;
+    GLfloat r;
+    GLfloat g;
+    GLfloat b;
+public:
+    GLfloat set_r(GLfloat red)
+    {
+        r = red;
+    }
+    GLfloat set_b(GLfloat blue)
+    {
+        b = blue;
+    }
+    GLfloat set_g(GLfloat green)
+    {
+        g = green;
+    }
+    GLfloat get_x()
+    {
+        return ballX;
+    }
+    GLfloat get_y()
+    {
+        return ballY;
+    }
+    GLfloat get_z()
+    {
+        return ballZ;
+    }
+    GLfloat get_vx()
+    {
+        return vx;
+    }
+    GLfloat get_vy()
+    {
+        return vy;
+    }
+    GLfloat get_vz()
+    {
+        return vz;
+    }
+    GLfloat set_x(GLfloat xd)
+    {
+        x = xd;
+    }
+    GLfloat set_y(GLfloat yd)
+    {
+        y = yd;
+    }
+    GLfloat set_z(GLfloat zd)
+    {
+        z = zd;
+    }
+    GLfloat set_vx(GLfloat xv)
+    {
+        vx = xv;
+    }
+    GLfloat set_vy(GLfloat yv)
+    {
+        vy = yv;
+    }
+    GLfloat set_vz(GLfloat zv)
+    {
+        vz = zv;
+    }
+    GLfloat set_radius(GLfloat r)
+    {
+        ballRadius = r;
+    }
+    GLfloat get_radius()
+    {
+        return ballRadius;
+    }
+};
+int Count = 2;
 GLfloat ballRadius = 0.1f;
 double ballX[2] = {0.3f,-0.3f};
 double ballY[2] = {0.0f,0.0f};
@@ -18,6 +99,7 @@ pthread_barrier_t barrier;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,2);
+vector <Ball> balls[2];
 void initGL()
 {
     glClearColor(0.0,0.0,0.0,1);
@@ -27,18 +109,21 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT);
     for(int j=0;j<2;j++)
     {
-    	glMatrixMode(GL_MODELVIEW);
+    	int x = get_x(balls[j]);
+        int y = get_y(balls[j]);
+        int r = get_radius(balls[j]);
+        glMatrixMode(GL_MODELVIEW);
     	glLoadIdentity();
     	//glTranslatef(ballX[j],ballY[j],0.0f);
     	glBegin(GL_TRIANGLE_FAN);
     	glColor3f(0.0f,1.0f,0.0f);
-    	glVertex2f(ballX[j],ballY[j]);
+    	glVertex2f(x,y);
     	GLint numSegments =  60;
     	GLfloat angle;
     	for(int i =0;i<=numSegments;i++)
     	{
         	angle = i * 2.0f * pi / numSegments;
-        	glVertex2f(ballX[j]+cos(angle)*ballRadius,ballY[j]+sin(angle) * ballRadius); 
+        	glVertex2f(x+cos(angle)*r,y+sin(angle) * r); 
     	}
        // cout<<ballX[j]<<" "<<ballY[j]<<endl;
     	glEnd();
@@ -91,7 +176,8 @@ void *bball(void* j)
 	int i = (long long int) j;
 	cout<<i<<endl;
 	while(true)
-	{	ballX[i]+=xspeed[i];
+	{	
+        ballX[i]+=xspeed[i];
     	ballY[i]+=yspeed[i];
     	if(ballX[i]>ballXMax)
     	{
