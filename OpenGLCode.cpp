@@ -1,8 +1,10 @@
 #include<iostream>
+#include<vector>
 #include<GL/glut.h>
 #include<math.h>
 #include<pthread.h>
 #include<unistd.h>
+#include<time.h>
 using namespace std;
 #define pi 3.14159
 
@@ -13,9 +15,9 @@ class Ball
     GLfloat ballY;
     GLfloat ballZ;
     GLfloat vx,vy,vz;
-    GLfloat r;
-    GLfloat g;
-    GLfloat b;
+    GLfloat r = 0.0f;
+    GLfloat g = 0.0f;
+    GLfloat b = 0.0f;
 public:
     GLfloat set_r(GLfloat red)
     {
@@ -55,15 +57,15 @@ public:
     }
     GLfloat set_x(GLfloat xd)
     {
-        x = xd;
+        ballX = xd;
     }
     GLfloat set_y(GLfloat yd)
     {
-        y = yd;
+        ballY = yd;
     }
     GLfloat set_z(GLfloat zd)
     {
-        z = zd;
+        ballZ = zd;
     }
     GLfloat set_vx(GLfloat xv)
     {
@@ -88,42 +90,43 @@ public:
 };
 int Count = 2;
 GLfloat ballRadius = 0.1f;
-double ballX[2] = {0.3f,-0.3f};
-double ballY[2] = {0.0f,0.0f};
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1;
-GLfloat xspeed[2] = {0.01f,-0.01f};
-GLfloat yspeed[2] = {0.01f,0.01f};
+GLfloat ballX[2],ballY[2],xspeed[2],yspeed[2];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,r[2];
 GLint refreshmillis = 30;
 GLdouble XLeft,XRight,YTop,YBottom;
 pthread_barrier_t barrier;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,2);
-vector <Ball> balls[2];
+Ball balls[2];
 void initGL()
 {
     glClearColor(0.0,0.0,0.0,1);
 }
+GLfloat distance(int i,int j)
+{
+    return(sqrt((ballX[i]-ballX[j])*(ballX[i]-ballX[j])));
+}
+
 void display()
 {	
     glClear(GL_COLOR_BUFFER_BIT);
     for(int j=0;j<2;j++)
     {
-    	int x = get_x(balls[j]);
-        int y = get_y(balls[j]);
-        int r = get_radius(balls[j]);
         glMatrixMode(GL_MODELVIEW);
     	glLoadIdentity();
     	//glTranslatef(ballX[j],ballY[j],0.0f);
     	glBegin(GL_TRIANGLE_FAN);
     	glColor3f(0.0f,1.0f,0.0f);
-    	glVertex2f(x,y);
+    	glVertex2f(ballX[j],ballY[j]);
+        cout<<ballX[j]<<" "<<ballY[j]<<" "<<j<<endl;
+        cout<<r[j]<<endl;
     	GLint numSegments =  60;
     	GLfloat angle;
     	for(int i =0;i<=numSegments;i++)
     	{
         	angle = i * 2.0f * pi / numSegments;
-        	glVertex2f(x+cos(angle)*r,y+sin(angle) * r); 
+        	glVertex2f(ballX[j]+cos(angle)*r[j], ballY[j]+ sin(angle) * r[j]); 
     	}
        // cout<<ballX[j]<<" "<<ballY[j]<<endl;
     	glEnd();
@@ -174,14 +177,19 @@ GLint windowPosy = 300;
 void *bball(void* j)
 {
 	int i = (long long int) j;
-	cout<<i<<endl;
+    ballX[i] = balls[i].get_x();
+    ballY[i] = balls[i].get_y();
+    xspeed[i] = balls[i].get_vx();
+    yspeed[i] = balls[i].get_vy();
+    r[i] = balls[i].get_radius();
+    pthread_barrier_wait(&barrier);
 	while(true)
 	{	
         ballX[i]+=xspeed[i];
     	ballY[i]+=yspeed[i];
     	if(ballX[i]>ballXMax)
     	{
-        	ballX[i] = ballXMax;
+        	xspeed[i] = ballXMax;
         	xspeed[i] = -xspeed[i];
     	}
     	else if(ballX[i]<ballXMin)
@@ -203,35 +211,12 @@ void *bball(void* j)
         pthread_mutex_lock(&mutex);
         for(int k = i+1;k<2;k++)
         {
-            if(abs(ballX[i]-ballX[k])<2*ballRadius)
+            if(distance(i,k)<r[i]+r[j])
             {
-                //usleep(1000000);
-                //cout<<xspeed[i]<<" "<<xspeed[k]<<endl;
                 GLfloat l = xspeed[i];
                 xspeed[i] = xspeed[k];
                 xspeed[k] = l;
-               /* while(abs(ballX[i]-ballX[k])<2*ballRadius)
-                {
-                    if(ballX[i]<ballX[k])
-                    {
-                        ballX[i]-=0.001f;
-                        ballX[k]+=0.001f;
-                    }
-                    else
-                    {
-                        ballX[i]+=0.0001f;
-                        ballX[i]-=0.0001f;
-                    }
-                }*/
-                //cout<<xspeed[i]<<" "<<xspeed[k]<<" "<<l<<endl;
-                //cout<<ballX[i]<<" "<<ballX[poiu]<<"Here the change happens"<<endl;
-                /*j = (ballX[i]+ballX[poiu])/2;
-                ballX[i] = j - ballRadius;
-                ballX[poiu] = j + ballRadius;*/
             }
-            //cout<<i<<endl;
-            //pthread_barrier_destroy(&barrier);
-            //cout<<"It unlocked"<<endl;
         }
         pthread_mutex_unlock(&mutex);
         usleep(10000);
@@ -240,6 +225,11 @@ void *bball(void* j)
 }
 int main(int argc,char** argv)
 {
+    time_t seconds;
+    time(&seconds);
+    srand((unsigned int) seconds);
+    cout<<rand()<<endl;
+    cout<<rand()<<endl;
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DOUBLE);
     glutInitWindowSize(windowWidth , windowHeight);
@@ -247,15 +237,19 @@ int main(int argc,char** argv)
     glutCreateWindow("Bouncing Ball");
     pthread_t id[2];
     int j = 0;
+    balls[0].set_x(0.3);
+    balls[0].set_y(0.5);
+    balls[1].set_x(-0.3);
+    balls[1].set_y(-0.5);
+    balls[0].set_radius(0.1);
+    balls[1].set_radius(0.1);
+    balls[0].set_vx(0.01);
+    balls[1].set_vx(-0.01);
+    balls[0].set_vy(0.01);
+    balls[1].set_vy(-0.01);
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
-    //xspeed = -xspeed;
     pthread_create(&id[1],NULL,bball,(void *) j);
-    //j = 2;
-    //pthread_create(&id,NULL,bball,(void *) j);
-    //cout<<j<<endl;
-    //cout<<ballX[0]<<" "<<ballX[1]<<" "<<ballY[0]<<" "<<ballY[1]<<endl;
-    //cout<<ballXMax<<" "<<ballYMax<<endl;
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutTimerFunc(0,Timer,0);
