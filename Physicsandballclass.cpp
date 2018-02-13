@@ -7,7 +7,7 @@
 #include<time.h>
 using namespace std;
 #define pi 3.14159
-#define step 0.005
+#define step 0.0005
 class Ball
 {
     GLfloat ballRadius;
@@ -104,9 +104,9 @@ void initGL()
 {
     glClearColor(0.0,0.0,0.0,1);
 }
-GLfloat distance(int i,int j)
+GLfloat sdistance(int i,int j)
 {
-    return(sqrt((ballX[i]-ballX[j])*(ballX[i]-ballX[j]) + (ballY[i]-ballY[j])*(ballY[i]-ballY[j])));
+    return((ballX[i]-ballX[j])*(ballX[i]-ballX[j]) + (ballY[i]-ballY[j])*(ballY[i]-ballY[j]));
 }
 void ncap(int i,int j)
 {
@@ -125,17 +125,17 @@ void collide(int i,int j)
 {
     ncap(i,j);
     GLfloat n1 = vdot(i),n2 = vdot(j);
+    while(sdistance(i,j)<(r[i]+r[j])*(r[i]+r[j]))
+    {
+        ballX[i]-=step*xspeed[i];
+        ballX[j]-=step*xspeed[j];
+        ballY[i]-=step*yspeed[i];
+        ballY[j]-=step*yspeed[j];
+    }
     xspeed[i] = xspeed[i] + (n2 - n1 )*normal[0];
     yspeed[i] =  yspeed[i] + (n2 - n1 )*normal[1];
     xspeed[j] =  xspeed[j] + (n1 - n2 )*normal[0];
     yspeed[j] =  yspeed[j] + (n1 - n2 )*normal[1];
-    while(distance(i,j)<r[i]+r[j])
-    {
-        ballX[i]+=step*xspeed[i];
-        ballX[j]+=step*xspeed[j];
-        ballY[i]+=step*yspeed[i];
-        ballY[j]+=step*yspeed[j];
-    }
 }
 void display()
 {	
@@ -233,18 +233,18 @@ void *bball(void* j)
         	ballY[i] = ballYMin;
         	yspeed[i] = -yspeed[i];
     	}
-        pthread_barrier_wait(&barrier);
+            pthread_barrier_wait(&barrier);
         pthread_mutex_lock(&mutex);
         for(int k = i+1;k<3;k++)
         {
-            if(distance(i,k)<r[i]+r[k])
+            if(sdistance(i,k)<(r[i]+r[k])*(r[i]+r[k]))
             {
                 collide(i,k);
                 //cout<<"Yeah"<<endl;
             }
         }
         pthread_mutex_unlock(&mutex);
-        usleep(10000);
+        usleep(20000);
     }
     
 }
@@ -263,20 +263,20 @@ int main(int argc,char** argv)
     pthread_t id[2];
     int j = 0;
     balls[0].set_x(0.3);
-    balls[0].set_y(0.5);
+    balls[0].set_y(0.4);
     balls[1].set_x(-0.3);
-    balls[1].set_y(-0.5);
-    balls[2].set_x(0.5);
-    balls[2].set_y(-0.2);
+    balls[1].set_y(0.4);
+    balls[2].set_x(0);
+    balls[2].set_y(0.5);
     balls[0].set_radius(0.1);
     balls[1].set_radius(0.1);
     balls[2].set_radius(0.1);
-    balls[0].set_vx(0.01);
-    balls[1].set_vx(-0.01);
-    balls[2].set_vx(-0.01);
-    balls[0].set_vy(0.04);
-    balls[1].set_vy(-0.01);
-    balls[2].set_vy(0.03);
+    balls[0].set_vx(-0.03);
+    balls[1].set_vx(0.03);
+    balls[2].set_vx(0);
+    balls[0].set_vy(-0.04);
+    balls[1].set_vy(-0.04);
+    balls[2].set_vy(-0.05);
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
