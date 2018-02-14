@@ -7,7 +7,7 @@
 #include<time.h>
 using namespace std;
 #define pi 3.14159
-#define step 0.005
+#define step 0.001
 class Ball
 {
     GLfloat ballRadius;
@@ -89,12 +89,12 @@ public:
     }
 };
 int count = 3;
-GLfloat ballRadius = 0.1f;
+GLfloat ballRadius = 0.2f;
 GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -3, ballZMin = -5,r[3];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,r[3];
 GLint refreshmillis = 30;
 GLfloat normal[3];
-GLdouble XLeft,XRight,YTop,YBottom,ZFront = 0,ZBack = -4;
+GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -6;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
@@ -144,17 +144,11 @@ void collide(int i,int j)
 void DrawCube(void)
 {
 
-     glMatrixMode(GL_MODELVIEW);
-    // clear the drawing buffer.
+    glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT);
-   glLoadIdentity();
-        glTranslatef(0.0,0.0,0.0);
-    //glRotatef(xRotated,1.0,0.0,0.0);
-    // rotation about Y axis
-    //glRotatef(yRotated,0.0,1.0,0.0);
-    // rotation about Z axis
-   // glRotatef(zRotated,0.0,0.0,1.0);
-  glBegin(GL_QUADS);        // Draw The Cube Using quads
+    glLoadIdentity();
+    glTranslatef(0.0,0.0,0.0);
+    glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor3f(0.0f,1.0f,0.0f);    // Color Blue
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Top)
@@ -187,31 +181,6 @@ void DrawCube(void)
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
   glEnd();            // End Drawing The Cube
 glFlush();
-}
-
-/*
-void animation(void)
-{
- 
-     yRotated += 0.01;
-     xRotated += 0.02;
-    DrawCube();
-}
-
-*/
-void reshapebox(int x, int y)
-{
-    if (y == 0 || x == 0) return;  //Nothing is visible then, so return
-    //Set a new projection matrix
-    glMatrixMode(GL_PROJECTION);  
-    glLoadIdentity();
-    //Angle of view:45 degrees
-    //Near clipping plane distance: 0.5
-    //Far clipping plane distance: 20.0
-     
-    gluPerspective(45.0,(GLdouble)x/(GLdouble)y,0,5.0);
-    glMatrixMode(GL_MODELVIEW);
-    glViewport(0,0,x,y);  //Use the whole window for rendering
 }
 void display()
 {	
@@ -255,12 +224,14 @@ void reshape(GLsizei width,GLsizei height)
         YTop = 1.0 / aspect;
     }
     //gluOrtho2D(XLeft,XRight,YBottom,YTop);
-    gluPerspective(39.0,(GLdouble)width/(GLdouble)height,1,5);
+    gluPerspective(45.0,(GLdouble)width/(GLdouble)height,0,6.2);
     ballXMin = XLeft + ballRadius;
     ballXMax = XRight - ballRadius;
     ballYMin = YBottom + ballRadius;
     ballYMax = YTop - ballRadius;
-    ballZMax; 
+    ballZMax = ZFront - ballRadius;
+    ballZMin = ZBack + ballRadius; 
+    cout<<"Yeah"<<endl;
 }
 
 void Timer(GLint value)
