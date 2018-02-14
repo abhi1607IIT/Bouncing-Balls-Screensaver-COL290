@@ -91,14 +91,15 @@ public:
 int count = 3;
 GLfloat ballRadius = 0.1f;
 GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -3, ballZMin = -5,r[3];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -2, ballZMin = -6,r[3];
 GLint refreshmillis = 30;
 GLfloat normal[3];
-GLdouble XLeft,XRight,YTop,YBottom;
-pthread_barrier_t barrier;
+GLdouble XLeft,XRight,YTop,YBottom,ZFront = -1.5,ZBack = -6.5;
+pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,3);
+int ret2 = pthread_barrier_init(&barrier2,&attr,3);
 Ball balls[3];
 void initGL()
 {
@@ -122,23 +123,22 @@ void collide(int i,int j)
 {
     ncap(i,j);
     GLfloat n1 = vdot(i),n2 = vdot(j);
-    while(sdistance(i,j)<=(r[i]+r[j])*(r[i]+r[j]))
-    {
-        ballX[i]-=step*xspeed[i];
-        ballX[j]-=step*xspeed[j];
-        ballY[i]-=step*yspeed[i];
-        ballY[j]-=step*yspeed[j];
-        ballZ[i]-=step*zspeed[i];
-        ballY[j]-=step*zspeed[j];
-        cout<<sdistance(i,j)<<"Oh Yeah"<<ballX[i]<<" "<<ballX[j]<<endl;
-    }
-    //cout<<"Oh Yeah"<<endl;
+    //cout<<"Done"<<endl;
     xspeed[i] = xspeed[i] + (n2 - n1 )*normal[0];
     yspeed[i] =  yspeed[i] + (n2 - n1 )*normal[1];
     zspeed[i] =  zspeed[i] + (n2 - n1 )*normal[2];
     xspeed[j] =  xspeed[j] + (n1 - n2 )*normal[0];
     yspeed[j] =  yspeed[j] + (n1 - n2 )*normal[1];
     zspeed[j] =  zspeed[j] + (n1 - n2 )*normal[2];
+    while(sdistance(i,j)<=(r[i]+r[j])*(r[i]+r[j]))
+    {
+        ballX[i]+=step*xspeed[i];
+        ballX[j]+=step*xspeed[j];
+        ballY[i]+=step*yspeed[i];
+        ballY[j]+=step*yspeed[j];
+        ballZ[i]+=step*zspeed[i];
+        ballY[j]+=step*zspeed[j];
+    }
 }
 void display()
 {	
@@ -154,6 +154,39 @@ void display()
         glutSolidSphere(r[j],20,20);
     	glEnd();
     }
+    glBegin(GL_QUADS);        // Draw The Cube Using quads
+    glColor3f(0.0f,1.0f,0.0f);    // Color Blue
+    glVertex3f( XRight,YTop ,ZBack);    // Top Right Of The Quad (Top)
+    glVertex3f(XLeft, YTop,ZBack);    // Top Left Of The Quad (Top)
+    glVertex3f(XLeft, YTop, ZFront);    // Bottom Left Of The Quad (Top)
+    glVertex3f( XRight, YTop, ZFront);    // Bottom Right Of The Quad (Top)
+    glColor3f(1.0f,0.5f,0.0f);    // Color Orange
+    glVertex3f( XRight,YBottom, ZFront);    // Top Right Of The Quad (Bottom)
+    glVertex3f(XLeft,YBottom, ZFront);    // Top Left Of The Quad (Bottom)
+    glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Bottom)
+    glVertex3f( XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Bottom)
+    glColor3f(1.0f,0.0f,0.0f);    // Color Red    
+    glVertex3f( XRight, YTop, ZFront);    // Top Right Of The Quad (Front)
+    glVertex3f(XLeft, YTop, ZFront);    // Top Left Of The Quad (Front)
+    glVertex3f(XLeft,YBottom, ZFront);    // Bottom Left Of The Quad (Front)
+    glVertex3f( XRight,YBottom, ZFront);    // Bottom Right Of The Quad (Front)
+    glColor3f(1.0f,1.0f,0.0f);    // Color Yellow
+    glVertex3f( XRight,YBottom,ZBack);    // Top Right Of The Quad (Back)
+    glVertex3f(XLeft,YBottom,ZBack);    // Top Left Of The Quad (Back)
+    glVertex3f(XLeft, YTop,ZBack);    // Bottom Left Of The Quad (Back)
+    glVertex3f( XRight, YTop,ZBack);    // Bottom Right Of The Quad (Back)
+    glColor3f(0.0f,0.0f,1.0f);    // Color Blue
+    glVertex3f(XLeft, YTop, ZFront);    // Top Right Of The Quad (Left)
+    glVertex3f(XLeft, YTop,ZBack);    // Top Left Of The Quad (Left)
+    glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Left)
+    glVertex3f(XLeft,YBottom, ZFront);    // Bottom Right Of The Quad (Left)
+    glColor3f(1.0f,0.0f,1.0f);    // Color Violet
+    glVertex3f( XRight, YTop,ZBack);    // Top Right Of The Quad (Right)
+    glVertex3f( XRight, YTop, ZFront);    // Top Left Of The Quad (Right)
+    glVertex3f( XRight,YBottom, ZFront);    // Bottom Left Of The Quad (Right)
+    glVertex3f( XRight,YBottom,ZBack);
+    cout<<XLeft<<" "<<XRight<<endl;    // Bottom Right Of The Quad (Right)
+glEnd();
     glutSwapBuffers();
 }
 void reshape(GLsizei width,GLsizei height)
@@ -171,6 +204,7 @@ void reshape(GLsizei width,GLsizei height)
         XRight = 1.0 * aspect;
         YBottom = -1.0;
         YTop = 1.0;
+
     }
     else
     {
@@ -179,12 +213,13 @@ void reshape(GLsizei width,GLsizei height)
         YBottom = -1.0 / aspect;
         YTop = 1.0 / aspect;
     }
-    gluOrtho2D(XLeft,XRight,YBottom,YTop);
+    //gluOrtho2D(XLeft,XRight,YBottom,YTop);
     gluPerspective(39.0,(GLdouble)width/(GLdouble)height,1,6);
     ballXMin = XLeft + ballRadius;
     ballXMax = XRight - ballRadius;
     ballYMin = YBottom + ballRadius;
     ballYMax = YTop - ballRadius;
+    ballZMax; 
 }
 
 void Timer(GLint value)
@@ -254,6 +289,7 @@ void *bball(void* j)
             }
         }
         pthread_mutex_unlock(&mutex);
+        pthread_barrier_wait(&barrier2);
         usleep(20000);
     }
     
@@ -277,10 +313,10 @@ int main(int argc,char** argv)
     balls[0].set_z(0);
     balls[1].set_x(-0.3);
     balls[1].set_y(0.4);
-    balls[1].set_z(0.2);
+    balls[1].set_z(0);
     balls[2].set_x(0);
     balls[2].set_y(0.5);
-    balls[2].set_z(-0.2);
+    balls[2].set_z(0);
     balls[0].set_radius(0.1);
     balls[1].set_radius(0.1);
     balls[2].set_radius(0.1);
@@ -290,9 +326,9 @@ int main(int argc,char** argv)
     balls[0].set_vy(-0.04);
     balls[1].set_vy(-0.04);
     balls[2].set_vy(-0.05);
-    balls[0].set_vz(-0.02);
-    balls[1].set_vz(0.02);
-    balls[2].set_vz(0.06);
+    balls[0].set_vz(0);
+    balls[1].set_vz(0);
+    balls[2].set_vz(0);
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
