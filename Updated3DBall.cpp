@@ -91,10 +91,10 @@ public:
 int count = 3;
 GLfloat ballRadius = 0.1f;
 GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -2, ballZMin = -4,r[3];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -3, ballZMin = -5,r[3];
 GLint refreshmillis = 30;
 GLfloat normal[3];
-GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -4;
+GLdouble XLeft,XRight,YTop,YBottom,ZFront = 0,ZBack = -4;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
@@ -209,7 +209,7 @@ void reshapebox(int x, int y)
     //Near clipping plane distance: 0.5
     //Far clipping plane distance: 20.0
      
-    gluPerspective(45.0,(GLdouble)x/(GLdouble)y,0.5,20.0);
+    gluPerspective(45.0,(GLdouble)x/(GLdouble)y,0,5.0);
     glMatrixMode(GL_MODELVIEW);
     glViewport(0,0,x,y);  //Use the whole window for rendering
 }
@@ -255,7 +255,7 @@ void reshape(GLsizei width,GLsizei height)
         YTop = 1.0 / aspect;
     }
     //gluOrtho2D(XLeft,XRight,YBottom,YTop);
-    gluPerspective(39.0,(GLdouble)width/(GLdouble)height,1,6);
+    gluPerspective(39.0,(GLdouble)width/(GLdouble)height,1,5);
     ballXMin = XLeft + ballRadius;
     ballXMax = XRight - ballRadius;
     ballYMin = YBottom + ballRadius;
@@ -339,9 +339,6 @@ int main(int argc,char** argv)
 {
     time_t seconds;
     time(&seconds);
-    srand((unsigned int) seconds);
-    cout<<rand()<<endl;
-    cout<<rand()<<endl;
     glutInit(&argc,argv);
     glutInitDisplayMode(GLUT_DOUBLE);
     glutInitWindowSize(windowWidth , windowHeight);
@@ -351,25 +348,25 @@ int main(int argc,char** argv)
     int j = 0;
     balls[0].set_x(0.3);
     balls[0].set_y(0.4);
-    balls[0].set_z(0);
+    balls[0].set_z(0.9);
     balls[1].set_x(-0.3);
     balls[1].set_y(0.4);
-    balls[1].set_z(0);
+    balls[1].set_z(0.4);
     balls[2].set_x(0);
     balls[2].set_y(0.5);
-    balls[2].set_z(0);
-    balls[0].set_radius(0.1);
-    balls[1].set_radius(0.1);
-    balls[2].set_radius(0.1);
+    balls[2].set_z(0.2);
+    balls[0].set_radius(0.2);
+    balls[1].set_radius(0.2);
+    balls[2].set_radius(0.2);
     balls[0].set_vx(-0.03);
     balls[1].set_vx(0.03);
     balls[2].set_vx(0);
     balls[0].set_vy(-0.04);
     balls[1].set_vy(-0.04);
     balls[2].set_vy(-0.05);
-    balls[0].set_vz(0);
-    balls[1].set_vz(0);
-    balls[2].set_vz(0);
+    balls[0].set_vz(0.08);
+    balls[1].set_vz(-0.02);
+    balls[2].set_vz(0.04);
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
