@@ -140,6 +140,7 @@ void collide(int i,int j)
         ballY[j]+=step*zspeed[j];
     }
 }
+
 void DrawCube(void)
 {
 
@@ -155,35 +156,35 @@ void DrawCube(void)
    // glRotatef(zRotated,0.0,0.0,1.0);
   glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor3f(0.0f,1.0f,0.0f);    // Color Blue
-    glVertex3f( Xright,YTop,ZBack);    // Top Right Of The Quad (Top)
-    glVertex3f(Xleft,YTop,ZBack);    // Top Left Of The Quad (Top)
-    glVertex3f(Xleft,YTop,ZFront);    // Bottom Left Of The Quad (Top)
-    glVertex3f( Xright,YTop,ZFront);    // Bottom Right Of The Quad (Top)
+    glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
+    glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Top)
+    glVertex3f(XLeft,YTop,ZFront);    // Bottom Left Of The Quad (Top)
+    glVertex3f( XRight,YTop,ZFront);    // Bottom Right Of The Quad (Top)
     glColor3f(1.0f,0.5f,0.0f);    // Color Orange
-    glVertex3f(Xright,YBottom,ZFront);    // Top Right Of The Quad (Bottom)
-    glVertex3f(Xleft,YBottom,ZFront);    // Top Left Of The Quad (Bottom)
-    glVertex3f(Xleft,YBottom,ZBack);    // Bottom Left Of The Quad (Bottom)
-    glVertex3f(Xright,YBottom,ZBack);    // Bottom Right Of The Quad (Bottom)
+    glVertex3f(XRight,YBottom,ZFront);    // Top Right Of The Quad (Bottom)
+    glVertex3f(XLeft,YBottom,ZFront);    // Top Left Of The Quad (Bottom)
+    glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Bottom)
+    glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Bottom)
     glColor3f(1.0f,0.0f,0.0f);    // Color Red    
-    glVertex3f(Xright,YTop,ZFront);    // Top Right Of The Quad (Front)
-    glVertex3f(Xleft,YTop,ZFront);    // Top Left Of The Quad (Front)
-    glVertex3f(Xleft,YBottom,ZFront);    // Bottom Left Of The Quad (Front)
-    glVertex3f(Xright,YBottom,ZFront);    // Bottom Right Of The Quad (Front)
+    glVertex3f(XRight,YTop,ZFront);    // Top Right Of The Quad (Front)
+    glVertex3f(XLeft,YTop,ZFront);    // Top Left Of The Quad (Front)
+    glVertex3f(XLeft,YBottom,ZFront);    // Bottom Left Of The Quad (Front)
+    glVertex3f(XRight,YBottom,ZFront);    // Bottom Right Of The Quad (Front)
     glColor3f(1.0f,1.0f,0.0f);    // Color Yellow
-    glVertex3f(Xright,YBottom,ZBack);    // Top Right Of The Quad (Back)
-    glVertex3f(Xleft,YBottom,ZBack);    // Top Left Of The Quad (Back)
-    glVertex3f(Xleft,YTop,ZBack);    // Bottom Left Of The Quad (Back)
-    glVertex3f(Xright,YTop,ZBack);    // Bottom Right Of The Quad (Back)
+    glVertex3f(XRight,YBottom,ZBack);    // Top Right Of The Quad (Back)
+    glVertex3f(XLeft,YBottom,ZBack);    // Top Left Of The Quad (Back)
+    glVertex3f(XLeft,YTop,ZBack);    // Bottom Left Of The Quad (Back)
+    glVertex3f(XRight,YTop,ZBack);    // Bottom Right Of The Quad (Back)
     glColor3f(0.0f,0.0f,1.0f);    // Color Blue
-    glVertex3f(Xleft,YTop,ZFront);    // Top Right Of The Quad (Left)
-    glVertex3f(Xleft,YTop,ZBack);    // Top Left Of The Quad (Left)
-    glVertex3f(Xleft,YBottom,ZBack);    // Bottom Left Of The Quad (Left)
-    glVertex3f(Xleft,YBottom,ZFront);    // Bottom Right Of The Quad (Left)
+    glVertex3f(XLeft,YTop,ZFront);    // Top Right Of The Quad (Left)
+    glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Left)
+    glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Left)
+    glVertex3f(XLeft,YBottom,ZFront);    // Bottom Right Of The Quad (Left)
     glColor3f(1.0f,0.0f,1.0f);    // Color Violet
-    glVertex3f(Xright,YTop,ZBack);    // Top Right Of The Quad (Right)
-    glVertex3f(Xright,YTop,ZFront);    // Top Left Of The Quad (Right)
-    glVertex3f(Xright,YBottom,ZFront);    // Bottom Left Of The Quad (Right)
-    glVertex3f(Xright,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
+    glVertex3f(XRight,YTop,ZBack);    // Top Right Of The Quad (Right)
+    glVertex3f(XRight,YTop,ZFront);    // Top Left Of The Quad (Right)
+    glVertex3f(XRight,YBottom,ZFront);    // Bottom Left Of The Quad (Right)
+    glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
   glEnd();            // End Drawing The Cube
 glFlush();
 }
@@ -196,6 +197,7 @@ void animation(void)
      xRotated += 0.02;
     DrawCube();
 }
+
 */
 void reshapebox(int x, int y)
 {
@@ -211,21 +213,20 @@ void reshapebox(int x, int y)
     glMatrixMode(GL_MODELVIEW);
     glViewport(0,0,x,y);  //Use the whole window for rendering
 }
-
 void display()
-{   
+{	
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     DrawCube();
     for(int j=0;j<3;j++)
     {
         glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glTranslatef(ballX[j],ballY[j],ballZ[j]);
+    	glLoadIdentity();
+    	glTranslatef(ballX[j],ballY[j],ballZ[j]);
         glColor3f(0.9, 0.3, 0.2);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(r[j],20,20);
-        glEnd();
+    	glEnd();
     }
     glutSwapBuffers();
 }
@@ -275,7 +276,7 @@ GLint windowPosy = 300;
 
 void *bball(void* j)
 {
-    int i = (long long int) j;
+	int i = (long long int) j;
     ballX[i] = balls[i].get_x();
     ballY[i] = balls[i].get_y();
     ballZ[i] = balls[i].get_z();
@@ -283,31 +284,31 @@ void *bball(void* j)
     yspeed[i] = balls[i].get_vy();
     zspeed[i] = balls[i].get_vz();
     r[i] = balls[i].get_radius();
-    while(true)
-    {   
+	while(true)
+	{	
         ballX[i]+=xspeed[i];
-        ballY[i]+=yspeed[i];
+    	ballY[i]+=yspeed[i];
         ballZ[i]+=zspeed[i];
-        if(ballX[i]>ballXMax)
-        {
-            ballX[i] = ballXMax;
-            xspeed[i] = -xspeed[i];
-        }
-        else if(ballX[i]<ballXMin)
-        {
-            ballX[i] = ballXMin;
-            xspeed[i] = -xspeed[i];
-        }
-        if(ballY[i]>ballYMax)
-        {
-            ballY[i] = ballYMax;
-            yspeed[i] = -yspeed[i];
-        }
-        else if(ballY[i]<ballYMin)
-        {
-            ballY[i] = ballYMin;
-            yspeed[i] = -yspeed[i];
-        }
+    	if(ballX[i]>ballXMax)
+    	{
+        	ballX[i] = ballXMax;
+        	xspeed[i] = -xspeed[i];
+    	}
+    	else if(ballX[i]<ballXMin)
+    	{
+        	ballX[i] = ballXMin;
+        	xspeed[i] = -xspeed[i];
+    	}
+    	if(ballY[i]>ballYMax)
+    	{
+        	ballY[i] = ballYMax;
+        	yspeed[i] = -yspeed[i];
+    	}
+    	else if(ballY[i]<ballYMin)
+    	{
+        	ballY[i] = ballYMin;
+        	yspeed[i] = -yspeed[i];
+    	}
         if(ballZ[i]>ballZMax)
         {
             ballZ[i] = ballZMax;
@@ -382,4 +383,4 @@ int main(int argc,char** argv)
     pthread_exit(&id[0]);
     pthread_exit(&id[1]);
     return 0;
-}
+}   
