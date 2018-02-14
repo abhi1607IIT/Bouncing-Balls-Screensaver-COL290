@@ -125,7 +125,7 @@ void collide(int i,int j)
 {
     ncap(i,j);
     GLfloat n1 = vdot(i),n2 = vdot(j);
-    while(sdistance(i,j)<(r[i]+r[j])*(r[i]+r[j]))
+    while(sdistance(i,j)<=(r[i]+r[j])*(r[i]+r[j]))
     {
         ballX[i]-=step*xspeed[i];
         ballX[j]-=step*xspeed[j];
