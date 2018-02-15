@@ -91,10 +91,10 @@ public:
 int count = 3;
 GLfloat ballRadius = 0.1f;
 GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -2, ballZMin = -6,r[3];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -2, ballZMin = -4,r[3];
 GLint refreshmillis = 30;
 GLfloat normal[3];
-GLdouble XLeft,XRight,YTop,YBottom,ZFront = -1.5,ZBack = -6.5;
+GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -4;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
