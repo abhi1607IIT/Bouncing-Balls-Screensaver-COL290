@@ -225,7 +225,7 @@ void display()
     	glTranslatef(ballX[j],ballY[j],ballZ[j]);
         glColor3f(0.9, 0.3, 0.2);
         glScalef(1.0,1.0,1.0);
-        glutSolidSphere(r[j],20,20);
+        glutWireSphere(r[j],20,20);
     	glEnd();
     }
     glutSwapBuffers();
