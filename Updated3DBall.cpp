@@ -7,7 +7,7 @@
 #include<time.h>
 using namespace std;
 #define pi 3.14159
-#define step 0.001
+#define step 0.0001
 class Ball
 {
     GLfloat ballRadius;
@@ -88,19 +88,21 @@ public:
         return ballRadius;
     }
 };
-int count = 3;
-GLfloat ballRadius = 0.2f;
-GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,r[3];
+int count = 5;
+GLfloat ballRadius = 0.12f;
+GLfloat ballX[5],ballY[5],ballZ[5],xspeed[5],yspeed[5],zspeed[5];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,r[5];
 GLint refreshmillis = 30;
-GLfloat normal[3];
+GLfloat normal[5];
 GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -6;
-pthread_barrier_t barrier,barrier2;
+pthread_barrier_t barrier,barrier2,barrier3,barrier4;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
-int ret = pthread_barrier_init(&barrier,&attr,3);
-int ret2 = pthread_barrier_init(&barrier2,&attr,3);
-Ball balls[3];
+int ret = pthread_barrier_init(&barrier,&attr,5);
+int ret2 = pthread_barrier_init(&barrier2,&attr,5);
+int ret3 = pthread_barrier_init(&barrier3,&attr,5);
+int ret4 = pthread_barrier_init(&barrier4,&attr,5);
+Ball balls[5];
 void initGL()
 {
     glClearColor(0.0,0.0,0.0,1);
@@ -187,14 +189,14 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     DrawCube();
-    for(int j=0;j<3;j++)
+    for(int j=0;j<5;j++)
     {
         glMatrixMode(GL_MODELVIEW);
     	glLoadIdentity();
     	glTranslatef(ballX[j],ballY[j],ballZ[j]);
         glColor3f(0.9, 0.3, 0.2);
         glScalef(1.0,1.0,1.0);
-        glutWireSphere(r[j],20,20);
+        glutSolidSphere(r[j],20,20);
     	glEnd();
     }
     glutSwapBuffers();
@@ -292,7 +294,7 @@ void *bball(void* j)
         }
         pthread_barrier_wait(&barrier);
         pthread_mutex_lock(&mutex);
-        for(int k = i+1;k<3;k++)
+        for(int k = i+1;k<5;k++)
         {
             if(sdistance(i,k)<=(r[i]+r[k])*(r[i]+r[k]))
             {
@@ -315,34 +317,26 @@ int main(int argc,char** argv)
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
     glutCreateWindow("Bouncing Ball");
-    pthread_t id[2];
+    pthread_t id[4];
     int j = 0;
-    balls[0].set_x(0.3);
-    balls[0].set_y(0.4);
-    balls[0].set_z(0.9);
-    balls[1].set_x(-0.3);
-    balls[1].set_y(0.4);
-    balls[1].set_z(0.4);
-    balls[2].set_x(0);
-    balls[2].set_y(0.5);
-    balls[2].set_z(0.2);
-    balls[0].set_radius(0.2);
-    balls[1].set_radius(0.2);
-    balls[2].set_radius(0.2);
-    balls[0].set_vx(-0.03);
-    balls[1].set_vx(0.03);
-    balls[2].set_vx(0);
-    balls[0].set_vy(-0.04);
-    balls[1].set_vy(-0.04);
-    balls[2].set_vy(-0.05);
-    balls[0].set_vz(0.08);
-    balls[1].set_vz(-0.02);
-    balls[2].set_vz(0.04);
+    for(int i=0;i<5;i++){
+        balls[i].set_x((rand()/(RAND_MAX/1.5f)) - 0.75);
+        balls[i].set_y((rand()/(RAND_MAX/1.5f)) - 0.75);
+        balls[i].set_z((rand()/(RAND_MAX/1.5f)) - 0.9);
+        balls[i].set_radius(0.12f);
+        balls[i].set_vx(0.03);
+        balls[i].set_vy(-0.03);
+        balls[i].set_vz(0.02);
+    }
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
     j = 2;
-    pthread_create(&id[1],NULL,bball,(void *) j);
+    pthread_create(&id[2],NULL,bball,(void *) j);
+    j=3;
+    pthread_create(&id[3],NULL,bball,(void *) j);
+    j=4;
+    pthread_create(&id[4],NULL,bball,(void *) j);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutTimerFunc(0,Timer,0);
@@ -350,5 +344,8 @@ int main(int argc,char** argv)
     glutMainLoop();
     pthread_exit(&id[0]);
     pthread_exit(&id[1]);
+    pthread_exit(&id[2]);
+    pthread_exit(&id[3]);
+    pthread_exit(&id[4]);
     return 0;
-}   
+} 
