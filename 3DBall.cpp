@@ -181,7 +181,7 @@ void reshape(GLsizei width,GLsizei height)
         YTop = 1.0 / aspect;
     }
     //gluOrtho2D(XLeft,XRight,YBottom,YTop);
-    gluPerspective(45.0,(GLdouble)width/(GLdouble)height,1,6);
+    gluPerspective(45.0,(GLdouble)width/(GLdouble)height,2,4);
     ballXMin = XLeft + ballRadius;
     ballXMax = XRight - ballRadius;
     ballYMin = YBottom + ballRadius;
@@ -273,15 +273,15 @@ int main(int argc,char** argv)
     glutCreateWindow("Bouncing Ball");
     pthread_t id[2];
     int j = 0;
-    balls[0].set_x(0.3);
-    balls[0].set_y(0.4);
-    balls[0].set_z(0);
-    balls[1].set_x(-0.3);
-    balls[1].set_y(0.4);
-    balls[1].set_z(0.2);
-    balls[2].set_x(0);
-    balls[2].set_y(0.5);
-    balls[2].set_z(-0.2);
+    balls[0].set_x((rand()/(RAND_MAX/1.5f)) - 0.75);
+    balls[0].set_y((rand()/(RAND_MAX/1.5f)) - 0.75);
+    balls[0].set_z((rand()/(RAND_MAX/1.5f)) - 0.9);
+    balls[1].set_x((rand()/(RAND_MAX/1.5f)) - 0.75);
+    balls[1].set_y((rand()/(RAND_MAX/1.5f)) - 0.75);
+    balls[1].set_z((rand()/(RAND_MAX/1.5f)) - 0.9);
+    balls[2].set_x((rand()/(RAND_MAX/1.5f)) - 0.75);
+    balls[2].set_y((rand()/(RAND_MAX/1.5f)) - 0.75);
+    balls[2].set_z((rand()/(RAND_MAX/1.5f)) - 0.9);
     balls[0].set_radius(0.1);
     balls[1].set_radius(0.1);
     balls[2].set_radius(0.1);
