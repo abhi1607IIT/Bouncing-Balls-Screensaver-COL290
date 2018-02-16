@@ -88,6 +88,29 @@ public:
         return ballRadius;
     }
 };
+class ConeObject
+{
+    GLfloat radius,height;
+    GLfloat red,green,blue;
+    GLfloat x,z;
+public:
+    ConeObject(GLfloat x)
+    {
+        radius = x;
+        height = x;
+    }
+    void set_colour(GLfloat r,GLfloat g,GLfloat b)
+    {
+        red = r;
+        green = g;
+        blue = b;
+    }
+    void set_position(GLfloat x1,GLfloat z1)
+    {
+        x = x1;
+        z = z1;
+    }
+};
 int count = 3;
 GLfloat ballRadius = 0.2f;
 GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
@@ -100,6 +123,7 @@ pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,3);
 Ball balls[3];
+//ConeObject cone1;
 void initGL()
 {
     glClearColor(0.0,0.0,0.0,1);
@@ -146,9 +170,9 @@ void DrawCube(void)
 {
 
     glMatrixMode(GL_MODELVIEW);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslatef(0.0,0.0,0.0);
+    glTranslatef(0.0,0.0,0.0);;
     glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor3f(0.0f,1.0f,0.0f);    // Color Blue
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
@@ -185,8 +209,9 @@ glFlush();
 }
 void display()
 {	
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     DrawCube();
     for(int j=0;j<3;j++)
     {
@@ -198,6 +223,14 @@ void display()
         glutSolidSphere(r[j],20,20);
     	glEnd();
     }
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0,YBottom,-4);
+    glColor3f(0, 0, 0);
+    glScalef(1.0,1.0,1.0);
+    glRotatef(270.0,1.0,0,0);
+    glutSolidCone(0.4,0.4,100,100);
+    glEnd();
     glutSwapBuffers();
 }
 void reshape(GLsizei width,GLsizei height)
@@ -318,13 +351,13 @@ int main(int argc,char** argv)
     int j = 0;
     balls[0].set_x(0.3);
     balls[0].set_y(0.4);
-    balls[0].set_z(0.9);
+    balls[0].set_z(-5);
     balls[1].set_x(-0.3);
     balls[1].set_y(0.4);
-    balls[1].set_z(0.4);
+    balls[1].set_z(-4.9);
     balls[2].set_x(0);
     balls[2].set_y(0.5);
-    balls[2].set_z(0.2);
+    balls[2].set_z(-6.8);
     balls[0].set_radius(0.2);
     balls[1].set_radius(0.2);
     balls[2].set_radius(0.2);
@@ -334,14 +367,17 @@ int main(int argc,char** argv)
     balls[0].set_vy(-0.04);
     balls[1].set_vy(-0.04);
     balls[2].set_vy(-0.05);
-    balls[0].set_vz(0.08);
-    balls[1].set_vz(-0.02);
-    balls[2].set_vz(0.04);
+    balls[0].set_vz(0.07);
+    balls[1].set_vz(0.02);
+    balls[2].set_vz(-0.06);
+    //cone1 = new ConeObject(0.2);
+    //cone1.set_colour(0.0,0.0,0.0);
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
     j = 2;
-    pthread_create(&id[1],NULL,bball,(void *) j);
+    pthread_create(&id[2],NULL,bball,(void *) j);
+    //cone1.set_position(0,-10)
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutTimerFunc(0,Timer,0);
