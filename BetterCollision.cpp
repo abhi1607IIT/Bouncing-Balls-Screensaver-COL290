@@ -92,11 +92,7 @@ class ConeObject
 {
     GLfloat radius,height;
     GLfloat red,green,blue;
-<<<<<<< HEAD
     GLfloat x,y,z;
-=======
-    GLfloat x,z;
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
 public:
     ConeObject(GLfloat x)
     {
@@ -115,7 +111,6 @@ public:
         z = z1;
     }
 };
-<<<<<<< HEAD
 class SphereObject
 {
     GLfloat radius;
@@ -165,8 +160,6 @@ public:
         glEnd();  
     }
 };
-=======
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
 int count = 3;
 GLfloat ballRadius = 0.2f;
 GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
@@ -180,10 +173,7 @@ pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,3);
 Ball balls[3];
-<<<<<<< HEAD
 SphereObject spheres[3];
-=======
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
 //ConeObject cone1;
 void initGL()
 {
@@ -259,12 +249,8 @@ void DrawCube(void)
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-<<<<<<< HEAD
     gluLookAt(0,0,zeye,0,0,zeye-2,0,400,0);
     glTranslatef(0.0,0.0,0.0);
-=======
-    glTranslatef(0.0,0.0,0.0);;
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
     glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor3f(0.0f,1.0f,0.0f);    // Color Blue
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
@@ -315,25 +301,17 @@ void display()
         glutSolidSphere(r[j],20,20);
     	glEnd();
     }
-<<<<<<< HEAD
     spheres[0].draw_sphere();
     glLoadIdentity();
     gluLookAt(0,0,zeye,0,0,-20,0,1,0);
     /*glMatrixMode(GL_MODELVIEW);
-=======
-    glMatrixMode(GL_MODELVIEW);
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
     glLoadIdentity();
     glTranslatef(0,YBottom,-4);
     glColor3f(0, 0, 0);
     glScalef(1.0,1.0,1.0);
     glRotatef(270.0,1.0,0,0);
     glutSolidCone(0.4,0.4,100,100);
-<<<<<<< HEAD
     glEnd();*/
-=======
-    glEnd();
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
     glutSwapBuffers();
     if(flag) zeye-=0.05;
     else zeye+=0.05;
@@ -491,12 +469,9 @@ int main(int argc,char** argv)
     balls[2].set_vz(-0.06);
     //cone1 = new ConeObject(0.2);
     //cone1.set_colour(0.0,0.0,0.0);
-<<<<<<< HEAD
     spheres[0].set_radius(0.7);
     spheres[0].set_colour(0.8,0.5,0.7);
     spheres[0].set_position(0,YBottom,-5);
-=======
->>>>>>> 68ee6dfcc08ffcf8fff3ed0c143c1e13b978c021
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
