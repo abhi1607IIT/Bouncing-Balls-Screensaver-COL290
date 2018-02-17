@@ -149,15 +149,15 @@ public:
     {
         return radius;
     }
-    void draw_sphere()
+    void draw_sphere(GLfloat zeye)
     {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+        gluLookAt(0,0,zeye,0,0,zeye-2,0,400,0);
         glTranslatef(x,y,z);
-        glColor3f(red,green,blue);
-        //glScalef(1.0,1.0,1.0);
+        glColor4f(red,green,blue,1);
         glutSolidSphere(radius,20,20);
-        glEnd();  
+        //glEnd();  
     }
 };
 int count = 3;
@@ -177,7 +177,9 @@ SphereObject spheres[3];
 //ConeObject cone1;
 void initGL()
 {
-    glClearColor(0.0,0.0,0.0,1);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearDepth(1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 GLfloat sdistance(int i,int j)
 {
@@ -252,58 +254,64 @@ void DrawCube(void)
     gluLookAt(0,0,zeye,0,0,zeye-2,0,400,0);
     glTranslatef(0.0,0.0,0.0);
     glBegin(GL_QUADS);        // Draw The Cube Using quads
-    glColor3f(0.0f,1.0f,0.0f);    // Color Blue
+    glColor4f(0.0f,1.0f,0.0f,1);    // Color Blue
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Top)
     glVertex3f(XLeft,YTop,ZFront);    // Bottom Left Of The Quad (Top)
     glVertex3f( XRight,YTop,ZFront);    // Bottom Right Of The Quad (Top)
-    glColor3f(1.0f,0.5f,0.0f);    // Color Orange
+    glColor4f(1.0f,0.5f,0.0f,1);    // Color Orange
     glVertex3f(XRight,YBottom,ZFront);    // Top Right Of The Quad (Bottom)
     glVertex3f(XLeft,YBottom,ZFront);    // Top Left Of The Quad (Bottom)
     glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Bottom)
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Bottom)
-    glColor3f(1.0f,0.0f,0.0f);    // Color Red    
+    glColor4f(1.0f,0.0f,0.0f,1);    // Color Red    
     glVertex3f(XRight,YTop,ZFront);    // Top Right Of The Quad (Front)
     glVertex3f(XLeft,YTop,ZFront);    // Top Left Of The Quad (Front)
     glVertex3f(XLeft,YBottom,ZFront);    // Bottom Left Of The Quad (Front)
     glVertex3f(XRight,YBottom,ZFront);    // Bottom Right Of The Quad (Front)
-    glColor3f(1.0f,1.0f,0.0f);    // Color Yellow
+    glColor4f(1.0f,1.0f,0.0f,1);    // Color Yellow
     glVertex3f(XRight,YBottom,ZBack);    // Top Right Of The Quad (Back)
     glVertex3f(XLeft,YBottom,ZBack);    // Top Left Of The Quad (Back)
     glVertex3f(XLeft,YTop,ZBack);    // Bottom Left Of The Quad (Back)
     glVertex3f(XRight,YTop,ZBack);    // Bottom Right Of The Quad (Back)
-    glColor3f(0.0f,0.0f,1.0f);    // Color Blue
+    glColor4f(0.0f,0.0f,1.0f,1);    // Color Blue
     glVertex3f(XLeft,YTop,ZFront);    // Top Right Of The Quad (Left)
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Left)
     glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Left)
     glVertex3f(XLeft,YBottom,ZFront);    // Bottom Right Of The Quad (Left)
-    glColor3f(1.0f,0.0f,1.0f);    // Color Violet
+    glColor4f(1.0f,0.0f,1.0f,1);    // Color Violet
     glVertex3f(XRight,YTop,ZBack);    // Top Right Of The Quad (Right)
     glVertex3f(XRight,YTop,ZFront);    // Top Left Of The Quad (Right)
     glVertex3f(XRight,YBottom,ZFront);    // Bottom Left Of The Quad (Right)
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
   glEnd();            // End Drawing The Cube
-glFlush();
+//glFlush();
 }
 void display()
-{	
+{   
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glDepthRange(0.0f, 1.0f);
     DrawCube();
     for(int j=0;j<3;j++)
     {
         glMatrixMode(GL_MODELVIEW);
-    	glLoadIdentity();
-    	glTranslatef(ballX[j],ballY[j],ballZ[j]);
-        glColor3f(0.9, 0.3, 0.2);
+        glLoadIdentity();
+        gluLookAt(0,0,zeye,0,0,zeye-2,0,400,0);
+        glTranslatef(ballX[j],ballY[j],ballZ[j]);
+        glColor4f(0.9, 0.3, 0.2,1);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(r[j],20,20);
-    	glEnd();
+        //glEnd();
     }
-    spheres[0].draw_sphere();
-    glLoadIdentity();
-    gluLookAt(0,0,zeye,0,0,-20,0,1,0);
+    spheres[0].draw_sphere(zeye);
+    if(spheres[0].get_z()<zeye) cout<<"Oh Yeah"<<endl;
+    //glLoadIdentity();
+    //gluLookAt(0,0,zeye,0,0,-20,0,1,0);
     /*glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glTranslatef(0,YBottom,-4);
@@ -323,6 +331,7 @@ void display()
     {
         flag = true;
     }
+    cout<<zeye<<endl;
 }
 void reshape(GLsizei width,GLsizei height)
 {
@@ -349,14 +358,14 @@ void reshape(GLsizei width,GLsizei height)
         YTop = 1.0 / aspect;
     }
     //gluOrtho2D(XLeft,XRight,YBottom,YTop);
-    gluPerspective(45.0,(GLdouble)width/(GLdouble)height,0,21);
+    gluPerspective(45.0,(GLdouble)width/(GLdouble)height,0,-21);
     ballXMin = XLeft + ballRadius;
     ballXMax = XRight - ballRadius;
     ballYMin = YBottom + ballRadius;
     ballYMax = YTop - ballRadius;
     ballZMax = ZFront - ballRadius;
     ballZMin = ZBack + ballRadius; 
-    spheres[0].set_position(0,YBottom,-5);
+    spheres[0].set_position(0,YBottom,-15);
 }
 
 
@@ -373,7 +382,7 @@ GLint windowPosy = 300;
 
 void *bball(void* j)
 {
-	int i = (long long int) j;
+    int i = (long long int) j;
     ballX[i] = balls[i].get_x();
     ballY[i] = balls[i].get_y();
     ballZ[i] = balls[i].get_z();
@@ -382,30 +391,30 @@ void *bball(void* j)
     zspeed[i] = balls[i].get_vz();
     r[i] = balls[i].get_radius();
     while(true)
-	{	
+    {   
         ballX[i]+=xspeed[i];
-    	ballY[i]+=yspeed[i];
+        ballY[i]+=yspeed[i];
         ballZ[i]+=zspeed[i];
-    	if(ballX[i]>ballXMax)
-    	{
-        	ballX[i] = ballXMax;
-        	xspeed[i] = -xspeed[i];
-    	}
-    	else if(ballX[i]<ballXMin)
-    	{
-        	ballX[i] = ballXMin;
-        	xspeed[i] = -xspeed[i];
-    	}
-    	if(ballY[i]>ballYMax)
-    	{
-        	ballY[i] = ballYMax;
-        	yspeed[i] = -yspeed[i];
-    	}
-    	else if(ballY[i]<ballYMin)
-    	{
-        	ballY[i] = ballYMin;
-        	yspeed[i] = -yspeed[i];
-    	}
+        if(ballX[i]>ballXMax)
+        {
+            ballX[i] = ballXMax;
+            xspeed[i] = -xspeed[i];
+        }
+        else if(ballX[i]<ballXMin)
+        {
+            ballX[i] = ballXMin;
+            xspeed[i] = -xspeed[i];
+        }
+        if(ballY[i]>ballYMax)
+        {
+            ballY[i] = ballYMax;
+            yspeed[i] = -yspeed[i];
+        }
+        else if(ballY[i]<ballYMin)
+        {
+            ballY[i] = ballYMin;
+            yspeed[i] = -yspeed[i];
+        }
         if(ballZ[i]>ballZMax)
         {
             ballZ[i] = ballZMax;
@@ -440,7 +449,7 @@ int main(int argc,char** argv)
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
     glutCreateWindow("Bouncing Ball");
@@ -471,7 +480,7 @@ int main(int argc,char** argv)
     //cone1.set_colour(0.0,0.0,0.0);
     spheres[0].set_radius(0.7);
     spheres[0].set_colour(0.8,0.5,0.7);
-    spheres[0].set_position(0,YBottom,-5);
+    spheres[0].set_position(0,YBottom,-15);
     pthread_create(&id[0],NULL,bball,(void *) j);
     j = 1;
     pthread_create(&id[1],NULL,bball,(void *) j);
