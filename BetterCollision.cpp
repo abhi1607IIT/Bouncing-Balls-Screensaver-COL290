@@ -8,6 +8,7 @@
 using namespace std;
 #define pi 3.14159
 #define step 0.0005
+#define delta 0.005
 class Ball
 {
     GLfloat ballRadius;
@@ -160,13 +161,13 @@ public:
         //glEnd();  
     }
 };
-int count = 3;
+int count = 3,bselected = -1;
 GLfloat ballRadius = 0.2f;
-GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
+GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3],vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
 GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,r[3],zeye = 0;
 GLint refreshmillis = 30;
 GLfloat normal[3];
-bool flag = true;
+bool flag = true,play = true;
 GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -20;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
@@ -303,13 +304,14 @@ void display()
         glLoadIdentity();
         gluLookAt(0,0,zeye,0,0,zeye-2,0,400,0);
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
-        glColor4f(0.9, 0.3, 0.2,1);
+        if(bselected!=j) glColor4f(0.9, 0.3, 0.2,1);
+        else glColor4f(0,1.0,1.0,1);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(r[j],20,20);
         //glEnd();
     }
     spheres[0].draw_sphere(zeye);
-    if(spheres[0].get_z()<zeye) cout<<"Oh Yeah"<<endl;
+    //if(spheres[0].get_z()<zeye) cout<<"Oh Yeah"<<endl;
     //glLoadIdentity();
     //gluLookAt(0,0,zeye,0,0,-20,0,1,0);
     /*glMatrixMode(GL_MODELVIEW);
@@ -323,7 +325,7 @@ void display()
     glutSwapBuffers();
     if(flag) zeye-=0.05;
     else zeye+=0.05;
-    if(zeye<-18)
+    if(zeye<-15)
     {
         flag = false;
     }
@@ -331,7 +333,7 @@ void display()
     {
         flag = true;
     }
-    cout<<zeye<<endl;
+   // cout<<zeye<<endl;
 }
 void reshape(GLsizei width,GLsizei height)
 {
@@ -392,9 +394,12 @@ void *bball(void* j)
     r[i] = balls[i].get_radius();
     while(true)
     {   
-        ballX[i]+=xspeed[i];
-        ballY[i]+=yspeed[i];
-        ballZ[i]+=zspeed[i];
+        if(play)
+        {   
+            ballX[i]+=xspeed[i];
+            ballY[i]+=yspeed[i];
+            ballZ[i]+=zspeed[i];
+        }
         if(ballX[i]>ballXMax)
         {
             ballX[i] = ballXMax;
@@ -444,6 +449,101 @@ void *bball(void* j)
     }
     
 }
+void specialKeys( int key, int x, int y ) {
+ 
+    //  Right arrow - increase rotation by 5 degree
+    if (key == GLUT_KEY_RIGHT)
+    {
+        if(bselected<0) return;
+        else
+        {
+            if(xspeed[bselected]<0&&xspeed[bselected]>-vxmax)
+            {
+                xspeed[bselected]-=delta;
+            }
+            else if(xspeed[bselected]>0&&xspeed[bselected]<vxmax)
+            {
+                xspeed[bselected]+=delta;
+            }
+            if(yspeed[bselected]<0&&yspeed[bselected]>-vymax)
+            {
+                yspeed[bselected]-=delta;
+            }
+            else if(yspeed[bselected]>0&&yspeed[bselected]<vymax)
+            {
+                yspeed[bselected]+=delta;
+            }
+            if(zspeed[bselected]<0&&zspeed[bselected]>-vzmax)
+            {
+                zspeed[bselected]-=delta;
+            }
+            else if(zspeed[bselected]>0&&zspeed[bselected]<vzmax)
+            {
+                zspeed[bselected]+=delta;
+            }
+        }
+    }
+  //  Left arrow - decrease rotation by 5 degree
+    else if (key == GLUT_KEY_LEFT)
+    { 
+        if(bselected<0) return;
+        else
+        {
+            if(xspeed[bselected]<0&&xspeed[bselected]>-vxmax)
+            {
+                xspeed[bselected]+=delta;
+            }
+            else if(xspeed[bselected]>0&&xspeed[bselected]<vxmax)
+            {
+                xspeed[bselected]-=delta;
+            }
+            if(yspeed[bselected]<0&&yspeed[bselected]>-vymax)
+            {
+                yspeed[bselected]+=delta;
+            }
+            else if(yspeed[bselected]>0&&yspeed[bselected]<vymax)
+            {
+                yspeed[bselected]-=delta;
+            }
+            if(zspeed[bselected]<0&&zspeed[bselected]>-vzmax)
+            {
+                zspeed[bselected]+=delta;
+            }
+            else if(zspeed[bselected]>0&&zspeed[bselected]<vzmax)
+            {
+                zspeed[bselected]-=delta;
+            }
+        }
+    }
+    else if(key== GLUT_KEY_UP)
+    {
+        bselected++;
+        if(bselected == count) bselected = 0;
+       usleep(1000);
+   }
+    else if(key== GLUT_KEY_DOWN)
+    {
+        bselected--;
+        if(bselected <0) bselected = count - 1;
+        usleep(1000);
+    }
+ 
+ 
+  /*else if (key == GLUT_KEY_DOWN)
+    rotate_x -= 5;*/
+ 
+  //  Request display update
+  glutPostRedisplay();
+ 
+}
+
+void normalKeys(unsigned char key, int x, int y) {
+if (key == ' ')
+{
+    play = !play;
+    usleep(1000);
+} 
+}
 int main(int argc,char** argv)
 {
     time_t seconds;
@@ -489,6 +589,8 @@ int main(int argc,char** argv)
     //cone1.set_position(0,-10)
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+    glutSpecialFunc(specialKeys);
+    glutKeyboardFunc(normalKeys);
     glutTimerFunc(0,Timer,0);
     initGL();
     glutMainLoop();
