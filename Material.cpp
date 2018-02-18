@@ -94,6 +94,7 @@ Image:: Image(const char *filename) {
     fseek(file, 24, SEEK_CUR);
 
     // read the data. 
+    cout<<endl<<size<<endl;
     data = (char *) malloc(size);
     if (data == NULL) {
     printf("Error allocating memory for color-corrected image data");

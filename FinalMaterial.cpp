@@ -307,7 +307,7 @@ SphereObject spheres[3];
 
 void initGL()
 {   
-    LoadGLTextures("walls2.bmp",0);
+    LoadGLTextures("walls3.bmp",0);
  
     glEnable(GL_TEXTURE_2D);
 
