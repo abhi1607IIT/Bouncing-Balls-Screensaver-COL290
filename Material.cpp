@@ -1,14 +1,143 @@
 #include<iostream>
+#include <stdio.h>
 #include<vector>
+#include <string>
 #include<GL/glut.h>
 #include<math.h>
 #include<pthread.h>
 #include<unistd.h>
 #include<time.h>
+#include <cstdlib>
+
 using namespace std;
 #define pi 3.14159
 #define step 0.0005
-#define delta 0.005
+const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 0.0f };
+const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_position[] = { 0.4f, 0.3f, -5.0f, 0.0f };
+const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
+const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
+const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat high_shininess[] = { 100.0f };
+GLuint texture;
+
+
+
+struct Image {
+    unsigned long sizeX;
+    unsigned long sizeY;
+    char *data;
+    Image(const char *filename);    
+    void SetSizeX(unsigned long i){sizeX = i;}
+    unsigned long GetSizeX(unsigned long i){return sizeX;}
+    unsigned long GetSizeY(unsigned long i){return sizeY;}
+    void SetSizeY(unsigned long i){sizeY = i;}
+};
+
+Image:: Image(const char *filename) {
+    FILE *file;
+    unsigned long size;                 // size of the image in bytes.
+    unsigned long i;                    // standard counter.
+    unsigned short int planes;          // number of planes in image (must be 1) 
+    unsigned short int bpp;             // number of bits per pixel (must be 24)
+    char temp;                          // temporary color storage for bgr-rgb conversion.
+
+    // make sure the file is there.
+    if ((file = fopen(filename, "rb"))==NULL)
+    {
+    printf("File Not Found : %s\n",filename);
+    exit(0);
+    }
+    
+    // seek through the bmp header, up to the width/height:
+    fseek(file, 18, SEEK_CUR);
+
+    // read the width
+    if ((i = fread(&sizeX, 4, 1, file)) != 1) {
+    printf("Error reading width from %s.\n", filename);
+    exit(0);
+    }
+    printf("Width of %s: %lu\n", filename, sizeX);
+    
+    // read the height 
+    if ((i = fread(&sizeY, 4, 1, file)) != 1) {
+    printf("Error reading height from %s.\n", filename);
+    exit(0);
+    }
+    printf("Height of %s: %lu\n", filename, sizeY);
+    
+    // calculate the size (assuming 24 bits or 3 bytes per pixel).
+    size = sizeX * sizeY * 3;
+
+    // read the planes
+    if ((fread(&planes, 2, 1, file)) != 1) {
+    printf("Error reading planes from %s.\n", filename);
+    exit(0);
+    }
+    if (planes != 1) {
+    printf("Planes from %s is not 1: %u\n", filename, planes);
+    exit(0);
+    }
+
+    // read the bpp
+    if ((i = fread(&bpp, 2, 1, file)) != 1) {
+    printf("Error reading bpp from %s.\n", filename);
+    exit(0);
+    }
+    if (bpp != 24) {
+    printf("Bpp from %s is not 24: %u\n", filename, bpp);
+    exit(0);
+    }
+    
+    // seek past the rest of the bitmap header.
+    fseek(file, 24, SEEK_CUR);
+
+    // read the data. 
+    data = (char *) malloc(size);
+    if (data == NULL) {
+    printf("Error allocating memory for color-corrected image data");
+    exit(0);   
+    }
+
+    if ((i = fread(data, size, 1, file)) != 1) {
+    printf("Error reading image data from %s.\n", filename);
+    exit(0);
+    }
+    
+
+    // we're done.
+} 
+
+
+// Load Bitmaps And Convert To Textures
+void LoadGLTextures(string path, int k) { 
+    // Load Texture
+    Image *image = new Image(path.c_str());
+    
+    // // allocate space for texture
+    // image = (Image *) malloc(sizeof(Image));
+    // if (image == NULL) {
+    // printf("Error allocating space for image");
+    // exit(0);
+    // }
+    // if (!ImageLoad(path.c_str(), image)) {
+    // exit(1);
+    // }        
+    
+    // Create Texture   
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);   // 2d texture (x and y size)
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // scale linearly when image bigger than texture
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // scale linearly when image smalled than texture
+
+    // 2d texture, level of detail 0 (normal), 3 components (red, green, blue), x size from image, y size from image, 
+    // border 0 (normal), rgb color data, unsigned byte data, and finally the data itself.
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, image->sizeX, image->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
+    free(image);
+};
+
 class Ball
 {
     GLfloat ballRadius;
@@ -161,13 +290,13 @@ public:
         //glEnd();  
     }
 };
-int count = 3,bselected = -1;
+int count = 3;
 GLfloat ballRadius = 0.2f;
-GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3],vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
+GLfloat ballX[3],ballY[3],ballZ[3],xspeed[3],yspeed[3],zspeed[3];
 GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,r[3],zeye = 0;
 GLint refreshmillis = 30;
 GLfloat normal[3];
-bool flag = true,play = true;
+bool flag = true;
 GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -20;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
@@ -175,12 +304,23 @@ pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,3);
 Ball balls[3];
 SphereObject spheres[3];
-//ConeObject cone1;
+
 void initGL()
-{
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClearDepth(1.0f);
+{   
+    LoadGLTextures("walls2.bmp",0);
+ 
+    glEnable(GL_TEXTURE_2D);
+
+    // This Will Clear The Background Color To Black
+    glClearColor(0.0f,0.0f,0.0f,0.0f);
+    glClearDepth(1.0);              // Enables Clearing Of The Depth Buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glEnable(GL_BLEND); //sachin
+    //glDepthFunc(GL_LESS);           // The Type Of Depth Test To Do
+    glEnable(GL_DEPTH_TEST);        // Enables Depth Testing
+    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);    
+
+    glShadeModel(GL_SMOOTH);
 }
 GLfloat sdistance(int i,int j)
 {
@@ -248,7 +388,9 @@ void s_object_collision(int i,int j)
 }
 void DrawCube(void)
 {
-
+    glDisable(GL_DEPTH_TEST);                   //sachin
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE); //sachin                   // Set The Blending Function For Translucency        
+    glBindTexture(GL_TEXTURE_2D, texture); 
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -256,40 +398,66 @@ void DrawCube(void)
     glTranslatef(0.0,0.0,0.0);
     glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor4f(0.0f,1.0f,0.0f,1);    // Color Blue
+    glTexCoord2f(1.0f, 0.0f);
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
+    glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Top)
+    glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZFront);    // Bottom Left Of The Quad (Top)
+    glTexCoord2f(0.0f, 0.0f);
     glVertex3f( XRight,YTop,ZFront);    // Bottom Right Of The Quad (Top)
     glColor4f(1.0f,0.5f,0.0f,1);    // Color Orange
+    glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZFront);    // Top Right Of The Quad (Bottom)
+    glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZFront);    // Top Left Of The Quad (Bottom)
+    glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Bottom)
+    glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Bottom)
     glColor4f(1.0f,0.0f,0.0f,1);    // Color Red    
+    glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YTop,ZFront);    // Top Right Of The Quad (Front)
+    glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZFront);    // Top Left Of The Quad (Front)
+    glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZFront);    // Bottom Left Of The Quad (Front)
+    glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZFront);    // Bottom Right Of The Quad (Front)
     glColor4f(1.0f,1.0f,0.0f,1);    // Color Yellow
+    glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Top Right Of The Quad (Back)
+    glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZBack);    // Top Left Of The Quad (Back)
+    glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZBack);    // Bottom Left Of The Quad (Back)
+    glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YTop,ZBack);    // Bottom Right Of The Quad (Back)
     glColor4f(0.0f,0.0f,1.0f,1);    // Color Blue
+    glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XLeft,YTop,ZFront);    // Top Right Of The Quad (Left)
+    glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Left)
+    glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Left)
+    glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XLeft,YBottom,ZFront);    // Bottom Right Of The Quad (Left)
     glColor4f(1.0f,0.0f,1.0f,1);    // Color Violet
+    glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YTop,ZBack);    // Top Right Of The Quad (Right)
+    glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XRight,YTop,ZFront);    // Top Left Of The Quad (Right)
+    glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XRight,YBottom,ZFront);    // Bottom Left Of The Quad (Right)
+    glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
   glEnd();            // End Drawing The Cube
 //glFlush();
+  
 }
 void display()
 {   
+    glEnable(GL_TEXTURE_2D);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -298,20 +466,20 @@ void display()
     glDepthFunc(GL_LEQUAL);
     glDepthRange(0.0f, 1.0f);
     DrawCube();
+    glDisable(GL_TEXTURE_2D);
     for(int j=0;j<3;j++)
     {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt(0,0,zeye,0,0,zeye-2,0,400,0);
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
-        if(bselected!=j) glColor4f(0.9, 0.3, 0.2,1);
-        else glColor4f(0,1.0,1.0,1);
+        glColor4f(0.9, 0.3, 0.2,1);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(r[j],20,20);
         //glEnd();
     }
     spheres[0].draw_sphere(zeye);
-    //if(spheres[0].get_z()<zeye) cout<<"Oh Yeah"<<endl;
+    if(spheres[0].get_z()<zeye) cout<<"Oh Yeah"<<endl;
     //glLoadIdentity();
     //gluLookAt(0,0,zeye,0,0,-20,0,1,0);
     /*glMatrixMode(GL_MODELVIEW);
@@ -325,7 +493,7 @@ void display()
     glutSwapBuffers();
     if(flag) zeye-=0.05;
     else zeye+=0.05;
-    if(zeye<-15)
+    if(zeye<-18)
     {
         flag = false;
     }
@@ -333,7 +501,7 @@ void display()
     {
         flag = true;
     }
-   // cout<<zeye<<endl;
+    cout<<zeye<<endl;
 }
 void reshape(GLsizei width,GLsizei height)
 {
@@ -394,12 +562,9 @@ void *bball(void* j)
     r[i] = balls[i].get_radius();
     while(true)
     {   
-        if(play)
-        {   
-            ballX[i]+=xspeed[i];
-            ballY[i]+=yspeed[i];
-            ballZ[i]+=zspeed[i];
-        }
+        ballX[i]+=xspeed[i];
+        ballY[i]+=yspeed[i];
+        ballZ[i]+=zspeed[i];
         if(ballX[i]>ballXMax)
         {
             ballX[i] = ballXMax;
@@ -449,101 +614,6 @@ void *bball(void* j)
     }
     
 }
-void specialKeys( int key, int x, int y ) {
- 
-    //  Right arrow - increase rotation by 5 degree
-    if (key == GLUT_KEY_RIGHT)
-    {
-        if(bselected<0) return;
-        else
-        {
-            if(xspeed[bselected]<0&&xspeed[bselected]>-vxmax)
-            {
-                xspeed[bselected]-=delta;
-            }
-            else if(xspeed[bselected]>0&&xspeed[bselected]<vxmax)
-            {
-                xspeed[bselected]+=delta;
-            }
-            if(yspeed[bselected]<0&&yspeed[bselected]>-vymax)
-            {
-                yspeed[bselected]-=delta;
-            }
-            else if(yspeed[bselected]>0&&yspeed[bselected]<vymax)
-            {
-                yspeed[bselected]+=delta;
-            }
-            if(zspeed[bselected]<0&&zspeed[bselected]>-vzmax)
-            {
-                zspeed[bselected]-=delta;
-            }
-            else if(zspeed[bselected]>0&&zspeed[bselected]<vzmax)
-            {
-                zspeed[bselected]+=delta;
-            }
-        }
-    }
-  //  Left arrow - decrease rotation by 5 degree
-    else if (key == GLUT_KEY_LEFT)
-    { 
-        if(bselected<0) return;
-        else
-        {
-            if(xspeed[bselected]<0&&xspeed[bselected]>-vxmax)
-            {
-                xspeed[bselected]+=delta;
-            }
-            else if(xspeed[bselected]>0&&xspeed[bselected]<vxmax)
-            {
-                xspeed[bselected]-=delta;
-            }
-            if(yspeed[bselected]<0&&yspeed[bselected]>-vymax)
-            {
-                yspeed[bselected]+=delta;
-            }
-            else if(yspeed[bselected]>0&&yspeed[bselected]<vymax)
-            {
-                yspeed[bselected]-=delta;
-            }
-            if(zspeed[bselected]<0&&zspeed[bselected]>-vzmax)
-            {
-                zspeed[bselected]+=delta;
-            }
-            else if(zspeed[bselected]>0&&zspeed[bselected]<vzmax)
-            {
-                zspeed[bselected]-=delta;
-            }
-        }
-    }
-    else if(key== GLUT_KEY_UP)
-    {
-        bselected++;
-        if(bselected == count) bselected = 0;
-       usleep(1000);
-   }
-    else if(key== GLUT_KEY_DOWN)
-    {
-        bselected--;
-        if(bselected <0) bselected = count - 1;
-        usleep(1000);
-    }
- 
- 
-  /*else if (key == GLUT_KEY_DOWN)
-    rotate_x -= 5;*/
- 
-  //  Request display update
-  glutPostRedisplay();
- 
-}
-
-void normalKeys(unsigned char key, int x, int y) {
-if (key == ' ')
-{
-    play = !play;
-    usleep(1000);
-} 
-}
 int main(int argc,char** argv)
 {
     time_t seconds;
@@ -589,8 +659,6 @@ int main(int argc,char** argv)
     //cone1.set_position(0,-10)
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
-    glutSpecialFunc(specialKeys);
-    glutKeyboardFunc(normalKeys);
     glutTimerFunc(0,Timer,0);
     initGL();
     glutMainLoop();
