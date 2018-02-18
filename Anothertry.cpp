@@ -67,6 +67,7 @@ Image:: Image(const char *filename) {
     printf("Error reading height from %s.\n", filename);
     exit(0);
     }
+    sizeY = 48;
     printf("Height of %s: %lu\n", filename, sizeY);
     
     // calculate the size (assuming 24 bits or 3 bytes per pixel).
@@ -138,84 +139,72 @@ void LoadGLTextures(string path, int k) {
 };
 uniform_real_distribution <float> lrand(-1.0,1.0);
 default_random_engine generator;
-class Ball
+class Balls
 {
-    GLfloat ballX;
-    GLfloat ballY;
-    GLfloat ballZ;
-    GLfloat vx,vy,vz;
-    GLfloat r = 0.0f;
-    GLfloat g = 0.0f;
-    GLfloat b = 0.0f;
+    GLint count ;
+    vector<GLfloat> ballX;
+    vector<GLfloat> ballY;
+    vector<GLfloat> ballZ;
+    vector<GLfloat> vx,vy,vz;
+    vector<GLfloat> r;
+    vector<GLfloat> g;
+    vector<GLfloat> b;
 public:
-    Ball()
+    Balls()
     {
-        ballX = lrand(generator);
-        ballY = lrand(generator);
-        ballZ = -4+ 2*lrand(generator);
+        count = 0;
     }
-    GLfloat set_r(GLfloat red)
+    void makeBall()
     {
-        r = red;
+        count++;
+        ballX.push_back(lrand(generator));
+        ballY.push_back(lrand(generator));
+        ballZ.push_back(-4 + 2 * lrand(generator));
+        vx.push_back(lrand(generator)/13);
+        vy.push_back(lrand(generator)/13);
+        vz.push_back(lrand(generator)/13);
+        r.push_back(0.5 + lrand(generator)/2);
+        b.push_back(0.5 + lrand(generator)/2);
+        g.push_back(0.5 + lrand(generator)/2);
     }
-    GLfloat set_b(GLfloat blue)
+    GLfloat get_x(GLint i)
     {
-        b = blue;
+        return ballX[i];
     }
-    GLfloat set_g(GLfloat green)
+    GLfloat get_y(GLint i)
     {
-        g = green;
+        return ballY[i];
     }
-    GLfloat get_x()
+    GLfloat get_z(GLint i)
     {
-        return ballX;
+        return ballZ[i];
     }
-    GLfloat get_y()
+    GLfloat get_vx(GLint i)
     {
-        return ballY;
+        return vx[i];
     }
-    GLfloat get_z()
+    GLfloat get_vy(GLint i)
     {
-        return ballZ;
+        return vy[i];
     }
-    GLfloat get_vx()
+    GLfloat get_vz(GLint i)
     {
-        return vx;
+        return vz[i];
     }
-    GLfloat get_vy()
+    GLfloat get_r(GLint i)
     {
-        return vy;
+        return r[i];
     }
-    GLfloat get_vz()
+    GLfloat get_g(GLint i)
     {
-        return vz;
+        return g[i];
     }
-    GLfloat set_x(GLfloat xd)
+    GLfloat get_b(GLint i)
     {
-        ballX = xd;
-    }
-    GLfloat set_y(GLfloat yd)
-    {
-        ballY = yd;
-    }
-    GLfloat set_z(GLfloat zd)
-    {
-        ballZ = zd;
-    }
-    GLfloat set_vx(GLfloat xv)
-    {
-        vx = xv;
-    }
-    GLfloat set_vy(GLfloat yv)
-    {
-        vy = yv;
-    }
-    GLfloat set_vz(GLfloat zv)
-    {
-        vz = zv;
+        return b[i];
     }
 };
-class ConeObject
+/*class ConeObject
 {
     GLfloat radius,height;
     GLfloat red,green,blue;
@@ -237,7 +226,7 @@ public:
         x = x1;
         z = z1;
     }
-};
+};*/
 class SphereObject
 {
     GLfloat radius;
@@ -288,10 +277,11 @@ public:
         glEnd();  
     }
 };
+Balls Ball;
 int count = 5;
 GLfloat ballRadius = 0.3f;
-GLfloat ballX[10],ballY[5],ballZ[5],xspeed[5],yspeed[5],zspeed[5];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,r[3],xeye = 0,aspect = 1;
+GLfloat ballX[5],ballY[5],ballZ[5],xspeed[5],yspeed[5],zspeed[5],red[5],green[5],blue[5];
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,xeye = 0,aspect = 1;
 GLint refreshmillis = 30;
 GLfloat normal[3];
 bool flag = true;
@@ -300,7 +290,6 @@ pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
 int ret = pthread_barrier_init(&barrier,&attr,5);
-Ball balls[5];
 SphereObject spheres[12];
 
 void initGL()
@@ -471,7 +460,7 @@ void display()
         glLoadIdentity();
         gluLookAt(xeye,0,0,xeye,0,-2,0,1,0);
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
-        glColor4f(0.9, 0.3, 0.2,1);
+        glColor4f(red[j],green[j] ,blue[j],1);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(ballRadius,30,30);
         glFlush();
@@ -546,12 +535,15 @@ GLint windowPosy = 300;
 void *bball(void* j)
 {
     int i = (long long int) j;
-    ballX[i] = balls[i].get_x();
-    ballY[i] = balls[i].get_y();
-    ballZ[i] = balls[i].get_z();
-    xspeed[i] = balls[i].get_vx();
-    yspeed[i] = balls[i].get_vy();
-    zspeed[i] = balls[i].get_vz();
+    ballX[i] = Ball.get_x(i);
+    ballY[i] = Ball.get_y(i);
+    ballZ[i] = Ball.get_z(i);
+    xspeed[i] = Ball.get_vx(i);
+    yspeed[i] = Ball.get_vy(i);
+    zspeed[i] = Ball.get_vz(i);
+    red[i] = Ball.get_r(i);
+    green[i] = Ball.get_g(i);
+    blue[i] = Ball.get_b(i);
     while(true)
     {   
         ballX[i]+=xspeed[i];
@@ -617,7 +609,11 @@ int main(int argc,char** argv)
     glutCreateWindow("Bouncing Ball");
     pthread_t id[5];
     int j = 0;
-    balls[0].set_x(0.3);
+    for(int i=0;i<5;i++)
+    {
+        Ball.makeBall();
+    }
+    /*balls[0].set_x(0.3);
     balls[0].set_y(0.4);
     balls[0].set_z(-5);
     balls[1].set_x(-0.3);
@@ -646,7 +642,7 @@ int main(int argc,char** argv)
     balls[1].set_vz(0.02);
     balls[2].set_vz(-0.06);
     balls[3].set_vz(0.06);
-    balls[4].set_vz(-0.02);
+    balls[4].set_vz(-0.02);*/
     spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
     spheres[0].set_position(1,YBottom,-4);
