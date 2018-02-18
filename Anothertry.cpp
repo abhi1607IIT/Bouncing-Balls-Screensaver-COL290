@@ -9,20 +9,23 @@
 #include<unistd.h>
 #include<time.h>
 #include <cstdlib>
-
 using namespace std;
 #define pi 3.14159
 #define step 0.0001
 #define delta 0.005
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 0.0f };
+const GLfloat light_ambient2[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_ambient3[] = {0.2f, 0.5f, 0.6f, 0.0f}
 const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat light_position[] = { 0.4f, 0.3f, -5.0f, 0.0f };
+const GLfloat light_position[] = { 2.0f, 5.0f, 2.0f, 0.0f };
+const GLfloat light_position2[]= { 0.0f,-4.0f, 0.0f, 0.0f};
 const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
 const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 100.0f };
 GLuint texture;
+
 
 
 
@@ -112,9 +115,17 @@ Image:: Image(const char *filename) {
 
     // we're done.
 } 
+<<<<<<< HEAD
 GLfloat ballRadius = 0.2f;
 void LoadGLTextures(string path, int k) 
 { 
+=======
+GLfloat ballRadius = 0.18f;
+
+// Load Bitmaps And Convert To Textures
+void LoadGLTextures(string path, int k) { 
+    // Load Texture
+>>>>>>> 65bc1899bf4843a67c10e8bc2fb7f08299554403
     Image *image = new Image(path.c_str());
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);   // 2d texture (x and y size)
@@ -222,6 +233,20 @@ public:
     void DrawBall(int j,GLfloat xeye)
     {
         glMatrixMode(GL_MODELVIEW);
+        glEnable(GL_LIGHT0);
+        glEnable(GL_NORMALIZE);
+        glEnable(GL_COLOR_MATERIAL);
+        glEnable(GL_LIGHTING);
+
+        glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
         glLoadIdentity();
         gluLookAt(xeye,0,0,xeye,0,-2,0,400,0);
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
@@ -231,6 +256,8 @@ public:
         }
         else glColor4f(r[j],g[j],b[j],1); 
         glutSolidSphere(ballRadius,30,30);
+        
+        glDisable(GL_LIGHT0);
         glFlush();
         glEnd();
     }
@@ -279,9 +306,24 @@ public:
         glLoadIdentity();
         gluLookAt(xeye,0,0,xeye,0,-2,0,1,0);
         glTranslatef(x,y,z);
+        glEnable(GL_LIGHT0);
+        glEnable(GL_NORMALIZE);
+        glEnable(GL_COLOR_MATERIAL);
+        glEnable(GL_LIGHTING);
+
+        glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient3);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
         glColor4f(red,green,blue,1);
         glutSolidSphere(radius,30,30);
         glFlush();
+        glDisable(GL_LIGHT0);
         glEnd();  
     }
 };
@@ -379,6 +421,20 @@ void DrawCube(void)
     glLoadIdentity();
     gluLookAt(xeye,0,0,xeye,0,-2,0,400,0);
     glTranslatef(0.0,0.0,0.0);
+    glEnable(GL_LIGHT0);
+        glEnable(GL_NORMALIZE);
+        glEnable(GL_COLOR_MATERIAL);
+        glEnable(GL_LIGHTING);
+
+        glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient2);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position2);
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
     glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor4f(0.0f,1.0f,0.0f,1);    // Color Blue
     glTexCoord2f(1.0f, 0.0f);
@@ -425,7 +481,9 @@ void DrawCube(void)
     glVertex3f(XRight,YBottom,ZFront);    // Bottom Left Of The Quad (Right)
     glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
+    glDisable(GL_LIGHT0);
   glEnd();            // End Drawing The Cube
+  
 //glFlush();
   
 }
@@ -671,6 +729,9 @@ void normalKeys(unsigned char key, int x, int y) {
     {
         play = !play;
         usleep(1000);
+    }
+    if(key=='?'){
+        bselected=-1;
     } 
     /*else if(key=='+')
     {
@@ -702,12 +763,18 @@ int main(int argc,char** argv)
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
     glutCreateWindow("Bouncing Ball");
+<<<<<<< HEAD
     for(int i=0;i<count;i++)
     {
         Ball.makeBall(xeye);
         pthread_create(&id,NULL,bball,(void *) i);
     }
     for(int i=0;i<10;i++)
+=======
+    pthread_t id[count];
+    int j = 0;
+    for(int i=0;i<5;i++)
+>>>>>>> 65bc1899bf4843a67c10e8bc2fb7f08299554403
     {
         cout<<lrand(generator)<<endl;
     }
