@@ -112,24 +112,10 @@ Image:: Image(const char *filename) {
 
     // we're done.
 } 
-GLfloat ballRadius = 0.3f;
-
-// Load Bitmaps And Convert To Textures
-void LoadGLTextures(string path, int k) { 
-    // Load Texture
+GLfloat ballRadius = 0.2f;
+void LoadGLTextures(string path, int k) 
+{ 
     Image *image = new Image(path.c_str());
-    
-    // // allocate space for texture
-    // image = (Image *) malloc(sizeof(Image));
-    // if (image == NULL) {
-    // printf("Error allocating space for image");
-    // exit(0);
-    // }
-    // if (!ImageLoad(path.c_str(), image)) {
-    // exit(1);
-    // }        
-    
-    // Create Texture   
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);   // 2d texture (x and y size)
 
@@ -137,7 +123,7 @@ void LoadGLTextures(string path, int k) {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, 3, image->sizeX, image->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
     free(image);
-};
+}
 uniform_real_distribution <float> lrand(-1.0,1.0);
 default_random_engine generator;
 int bselected = -1;
@@ -156,10 +142,10 @@ public:
     {
         count = 0;
     }
-    void makeBall()
+    void makeBall(GLfloat xeye)
     {
         count++;
-        ballX.push_back(lrand(generator));
+        ballX.push_back(xeye + lrand(generator));
         ballY.push_back(lrand(generator));
         ballZ.push_back(-4 + 2 * lrand(generator));
         vx.push_back(lrand(generator)/20);
@@ -229,6 +215,10 @@ public:
     {
         return b[i];
     }
+    GLint get_count()
+    {
+        return count;
+    }
     void DrawBall(int j,GLfloat xeye)
     {
         glMatrixMode(GL_MODELVIEW);
@@ -237,7 +227,7 @@ public:
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
         if(j==bselected)
         {
-            glColor4f(0.9,0.9,0.9,1);
+            glColor4f(1.0,1.0,1.0,1);
         }
         else glColor4f(r[j],g[j],b[j],1); 
         glutSolidSphere(ballRadius,30,30);
@@ -245,29 +235,6 @@ public:
         glEnd();
     }
 };
-/*class ConeObject
-{
-    GLfloat radius,height;
-    GLfloat red,green,blue;
-    GLfloat x,y,z;
-public:
-    ConeObject(GLfloat x)
-    {
-        radius = x;
-        height = x;
-    }
-    void set_colour(GLfloat r,GLfloat g,GLfloat b)
-    {
-        red = r;
-        green = g;
-        blue = b;
-    }
-    void set_position(GLfloat x1,GLfloat z1)
-    {
-        x = x1;
-        z = z1;
-    }
-};*/
 class SphereObject
 {
     GLfloat radius;
@@ -319,33 +286,25 @@ public:
     }
 };
 Balls Ball;
-int count = 5;
+int count ;
 GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,xeye = 0,aspect = 1,vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
 GLint refreshmillis = 30;
 GLfloat normal[3];
 bool flag = true,play = true;
 GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -6;
 pthread_barrier_t barrier,barrier2;
-pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
-int ret = pthread_barrier_init(&barrier,&attr,5);
+pthread_barrierattr_t attr;
 SphereObject spheres[12];
 
 void initGL()
 {   
     LoadGLTextures("walls2.bmp",0);
- 
     glEnable(GL_TEXTURE_2D);
-
-    // This Will Clear The Background Color To Black
     glClearColor(0.0f,0.0f,0.0f,0.0f);
-    glClearDepth(1.0);              // Enables Clearing Of The Depth Buffer
+    glClearDepth(1.0);              
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glEnable(GL_BLEND); //sachin
-    //glDepthFunc(GL_LESS);           // The Type Of Depth Test To Do
-    glEnable(GL_DEPTH_TEST);        // Enables Depth Testing
-    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);    
-
+    glEnable(GL_DEPTH_TEST); 
     glShadeModel(GL_SMOOTH);
 }
 GLfloat sdistance(int i,int j)
@@ -376,14 +335,12 @@ void collide(int i,int j)
     }
     ncap(i,j,sqrt(sdistance(i,j)));
     GLfloat n1 = vdot(i),n2 = vdot(j);
-    //cout<<"Done"<<endl;
     Ball.set_vx(i,Ball.get_vx(i) + (n2 - n1 )*normal[0]);
     Ball.set_vy(i,Ball.get_vy(i) + (n2 - n1 )*normal[1]);
     Ball.set_vz(i,Ball.get_vz(i) + (n2 - n1 )*normal[2]);
     Ball.set_vx(j,Ball.get_vx(j) + (n1 - n2 )*normal[0]);
     Ball.set_vy(j,Ball.get_vy(j) + (n1 - n2 )*normal[1]);
     Ball.set_vz(j,Ball.get_vz(j) + (n1 - n2 )*normal[2]);
-   // cout<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<endl<<endl;
 }
 GLfloat snormal[3];
 void s_object_collision(int i,int j)
@@ -493,7 +450,7 @@ void display()
     ballXMax = XRight - ballRadius;
     DrawCube();
     glDisable(GL_TEXTURE_2D);
-    for(int j=0;j<5;j++)
+    for(int j=0;j<count;j++)
     {
         Ball.DrawBall(j,xeye);
     }
@@ -612,9 +569,8 @@ void *bball(void* j)
             s_object_collision(i,k);
         }
         pthread_barrier_wait(&barrier);
-        //cout<<"Passed the barrier";
         pthread_mutex_lock(&mutex);
-        for(int k = i+1;k<5;k++)
+        for(int k = i+1;k<count;k++)
         {
             if(sdistance(i,k)<ballRadius*ballRadius)
             {
@@ -622,7 +578,7 @@ void *bball(void* j)
             }
         }
         pthread_mutex_unlock(&mutex);
-        pthread_barrier_wait(&barrier);
+        //pthread_barrier_wait(&barrier);
         usleep(20000);
     }
     
@@ -708,28 +664,52 @@ void specialKeys( int key, int x, int y )
   glutPostRedisplay();
  
 }
-
+int ret;
+pthread_t id;
 void normalKeys(unsigned char key, int x, int y) {
     if (key == ' ')
     {
         play = !play;
         usleep(1000);
     } 
+    /*else if(key=='+')
+    {
+        //pthread_barrier_destroy(&barrier);
+        count++;
+        ret = pthread_barrier_init(&barrier,&attr,count);
+        Ball.makeBall(xeye);
+        cout<<Ball.get_vx(count-1)<<endl;
+        pthread_create(&id,NULL,bball,(void *) count-1);
+    }*/
 }
 int main(int argc,char** argv)
 {
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
+    count = 10;
+    if(count%2==0)
+    {
+        ret = pthread_barrier_init(&barrier,&attr,count);
+        ret = pthread_barrier_init(&barrier,&attr,count-1);
+    }
+    else
+    {
+        ret = pthread_barrier_init(&barrier,&attr,count-1);
+        ret = pthread_barrier_init(&barrier,&attr,count);
+    }
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
     glutCreateWindow("Bouncing Ball");
-    pthread_t id[5];
-    int j = 0;
-    for(int i=0;i<5;i++)
+    for(int i=0;i<count;i++)
     {
-        Ball.makeBall();
+        Ball.makeBall(xeye);
+        pthread_create(&id,NULL,bball,(void *) i);
+    }
+    for(int i=0;i<10;i++)
+    {
+        cout<<lrand(generator)<<endl;
     }
     spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
@@ -755,15 +735,6 @@ int main(int argc,char** argv)
     spheres[7].set_radius(0.5);
     spheres[7].set_colour(0.3,0.9,0.5);
     spheres[7].set_position(8.9,YBottom,-5);
-    pthread_create(&id[0],NULL,bball,(void *) j);
-    j = 1;
-    pthread_create(&id[1],NULL,bball,(void *) j);
-    j = 2;
-    pthread_create(&id[2],NULL,bball,(void *) j);
-    j = 3;
-    pthread_create(&id[3],NULL,bball,(void *) j);
-    j = 4;
-    pthread_create(&id[4],NULL,bball,(void *) j);
     glEnable(GL_DEPTH_TEST);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
@@ -772,7 +743,6 @@ int main(int argc,char** argv)
     glutKeyboardFunc(normalKeys);
     initGL();
     glutMainLoop();
-    pthread_exit(&id[0]);
-    pthread_exit(&id[1]);
+    pthread_exit(&id);
     return 0;
 } 
