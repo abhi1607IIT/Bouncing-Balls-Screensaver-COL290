@@ -58,6 +58,7 @@ Image:: Image(const char *filename) {
     printf("Error reading width from %s.\n", filename);
     exit(0);
     }
+    sizeX = 64;
     printf("Width of %s: %lu\n", filename, sizeX);
     
     // read the height 
@@ -287,7 +288,8 @@ public:
         glTranslatef(x,y,z);
         glColor4f(red,green,blue,1);
         glutSolidSphere(radius,20,20);
-        //glEnd();  
+        glFlush();
+        glEnd();  
     }
 };
 int count = 3;
@@ -307,7 +309,7 @@ SphereObject spheres[3];
 
 void initGL()
 {   
-    LoadGLTextures("walls3.bmp",0);
+    LoadGLTextures("walls2.bmp",0);
  
     glEnable(GL_TEXTURE_2D);
 
@@ -388,7 +390,7 @@ void s_object_collision(int i,int j)
 }
 void DrawCube(void)
 {
-    glDisable(GL_DEPTH_TEST);                   //sachin
+    //glDisable(GL_DEPTH_TEST);                   //sachin
     glBlendFunc(GL_SRC_ALPHA,GL_ONE); //sachin                   // Set The Blending Function For Translucency        
     glBindTexture(GL_TEXTURE_2D, texture); 
     glMatrixMode(GL_MODELVIEW);
@@ -461,9 +463,6 @@ void display()
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
     glDepthRange(0.0f, 1.0f);
     DrawCube();
     glDisable(GL_TEXTURE_2D);
@@ -476,7 +475,8 @@ void display()
         glColor4f(0.9, 0.3, 0.2,1);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(r[j],20,20);
-        //glEnd();
+        glFlush();
+        glEnd();
     }
     spheres[0].draw_sphere(zeye);
     if(spheres[0].get_z()<zeye) cout<<"Oh Yeah"<<endl;
@@ -648,7 +648,7 @@ int main(int argc,char** argv)
     balls[2].set_vz(-0.06);
     //cone1 = new ConeObject(0.2);
     //cone1.set_colour(0.0,0.0,0.0);
-    spheres[0].set_radius(0.7);
+    spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
     spheres[0].set_position(0,YBottom,-15);
     pthread_create(&id[0],NULL,bball,(void *) j);
@@ -657,6 +657,7 @@ int main(int argc,char** argv)
     j = 2;
     pthread_create(&id[2],NULL,bball,(void *) j);
     //cone1.set_position(0,-10)
+    glEnable(GL_DEPTH_TEST);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutTimerFunc(0,Timer,0);
