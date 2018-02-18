@@ -8,6 +8,17 @@
 using namespace std;
 #define pi 3.14159
 #define step 0.0005
+    /* white ambient light at half intensity (rgba) */
+    GLfloat ambientLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    /* super bright, full intensity diffuse light. */
+    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat specularLight[] = { 1.0, 1.0, 1.0, 1.0 };
+
+    /* position of light (x, y, z, (position of light)) */
+    GLfloat lightPosition1[] = { 0.0f, 1.0f, -4.0f, 0.0f };
+    GLfloat lightPosition2[] = { 0.0f, 1.0f, 4.0f, 0.0f };
+
 class Ball
 {
     GLfloat ballRadius;
@@ -156,7 +167,19 @@ public:
         glTranslatef(x,y,z);
         glColor3f(red,green,blue);
         //glScalef(1.0,1.0,1.0);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);    
+    //LightUp(amb_light);
+        glLightfv(GL_LIGHT1, GL_AMBIENT, ambientLight);  // add lighting. (ambient)
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLight);  // add lighting. (diffuse).
+        glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1); // set light position.
+        glEnable(GL_LIGHT1);                             // turn light 1 on.
+
+        glLightfv(GL_LIGHT2, GL_AMBIENT, ambientLight);  // add lighting. (ambient)
+        glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuseLight);  // add lighting. (diffuse).
+        glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2); // set light position.
+        glEnable(GL_LIGHT2);
         glutSolidSphere(radius,20,20);
+                                     // turn light 1 on.
         glEnd();  
     }
 };
@@ -208,7 +231,7 @@ void collide(int i,int j)
     ncap(i,j,sqrt(sdistance(i,j)));
     GLfloat n1 = vdot(i),n2 = vdot(j);
     //cout<<"Done"<<endl;
-    xspeed[i] = xspeed[i] + (n2 - n1 )*normal[0];
+    xspeed[i] = xspeed[i] + (n2 - n1 )*normal[0]; 
     yspeed[i] =  yspeed[i] + (n2 - n1 )*normal[1];
     zspeed[i] =  zspeed[i] + (n2 - n1 )*normal[2];
     xspeed[j] =  xspeed[j] + (n1 - n2 )*normal[0];
@@ -296,9 +319,21 @@ void display()
         glMatrixMode(GL_MODELVIEW);
     	glLoadIdentity();
     	glTranslatef(ballX[j],ballY[j],ballZ[j]);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);    
+    //LightUp(amb_light);
+        glLightfv(GL_LIGHT1, GL_AMBIENT, ambientLight);  // add lighting. (ambient)
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLight);  // add lighting. (diffuse).
+        glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1); // set light position.
+        glEnable(GL_LIGHT1);                             // turn light 1 on.
+
+        glLightfv(GL_LIGHT2, GL_AMBIENT, ambientLight);  // add lighting. (ambient)
+        glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuseLight);  // add lighting. (diffuse).
+        glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2); // set light position.
+        glEnable(GL_LIGHT2);
         glColor3f(0.9, 0.3, 0.2);
         glScalef(1.0,1.0,1.0);
         glutSolidSphere(r[j],20,20);
+
     	glEnd();
     }
     spheres[0].draw_sphere();
