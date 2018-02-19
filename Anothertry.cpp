@@ -13,6 +13,7 @@ using namespace std;
 #define pi 3.14159
 #define step 0.0001
 #define delta 0.005
+#define gravity 0.003
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 0.0f };
 const GLfloat light_ambient2[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_ambient3[] = {0.2f, 0.5f, 0.6f, 0.0f};
@@ -335,7 +336,7 @@ int count;
 GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,zeye = 0,xeye = 0,aspect = 1,vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
 GLint refreshmillis = 30;
 GLfloat normal[3];
-bool flag = true,play = true;
+bool flag = true,play = true,g = false;
 GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -6;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
@@ -571,18 +572,18 @@ void reshape(GLsizei width,GLsizei height)
     ballYMax = YTop - ballRadius;
     ballZMax = ZFront - ballRadius;
     ballZMin = ZBack + ballRadius; 
-    spheres[0].set_position(1,YBottom,-4);
-    spheres[1].set_position(2.3,YBottom,-4.8);
+    spheres[0].set_position(1,YBottom,-2.5);
+    spheres[1].set_position(2.3,YBottom,-3.9);
     spheres[2].set_position(2.6,YBottom,-6);
-    spheres[3].set_position(3.7,YBottom,-3);
-    spheres[4].set_position(5.6,YBottom,-5.5);
-    spheres[5].set_position(6.2,YBottom,-4.7);
-    spheres[6].set_position(8,YBottom,-4.2);
+    spheres[3].set_position(3.7,YBottom,-3.3);
+    spheres[4].set_position(5.6,YBottom,-4.1);
+    spheres[5].set_position(6.2,YBottom,-4.9);
+    spheres[6].set_position(8,YBottom,-3.7);
     spheres[7].set_position(8.9,YBottom,-5);
-    spheres[8].set_position(10.4,YBottom,-4.8);
+    spheres[8].set_position(10.4,YBottom,-4.1);
     spheres[9].set_position(4.5,YBottom,-6);
-    spheres[10].set_position(7,YBottom,-5.2);
-    spheres[11].set_position(9.5,YBottom,-4.3);
+    spheres[10].set_position(7,YBottom,-4.9);
+    spheres[11].set_position(9.5,YBottom,-2.9);
     spheres[12].set_position(-0.2,YBottom,-5.3);
 }
 
@@ -605,6 +606,10 @@ void *bball(void* j)
     {   
         if(play)
         {
+            if(g)
+            {
+                Ball.set_vy(i,Ball.get_vy(i) - gravity);
+            }
             Ball.set_x(i,Ball.get_x(i)+Ball.get_vx(i));
             Ball.set_y(i,Ball.get_y(i)+Ball.get_vy(i));
             Ball.set_z(i,Ball.get_z(i)+Ball.get_vz(i));
@@ -747,22 +752,26 @@ void normalKeys(unsigned char key, int x, int y) {
         play = !play;
         usleep(1000);
     }
-    if(key=='?'){
+    else if(key=='?'){
         bselected=-1;
     } 
-    if(key=='+')
+    else if(key=='+')
     {
         count++;
         Ball.makeBall(xeye);
         int ret = pthread_create(&id[count-1],NULL,bball,(void *) count-1);
     }
-    if(key=='w')
+    else if(key=='w')
     {
         if(zeye>-3.6) zeye-=0.1;
     }
-    if(key=='s')
+    else if(key=='s')
     {
         if(zeye<0.4) zeye+=0.1;
+    }
+    else if(key=='g')
+    {
+        g = !g;
     }
 }
 int main(int argc,char** argv)
@@ -788,7 +797,7 @@ int main(int argc,char** argv)
     }
     spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
-    spheres[0].set_position(1,YBottom,-3);
+    spheres[0].set_position(1,YBottom,-2.5);
     spheres[1].set_radius(0.3);
     spheres[1].set_colour(0.4,0.2,0.8);
     spheres[1].set_position(2.3,YBottom,-3.9);
@@ -797,13 +806,13 @@ int main(int argc,char** argv)
     spheres[2].set_position(2.6,YBottom,-6);
     spheres[3].set_radius(0.5);
     spheres[3].set_colour(0.2,0.7,0.5);
-    spheres[3].set_position(3.7,YBottom,-3.5);
+    spheres[3].set_position(3.7,YBottom,-3.3);
     spheres[4].set_radius(0.7);
     spheres[4].set_colour(0.1,0.7,0.7);
-    spheres[4].set_position(5.6,YBottom,-5.2);
+    spheres[4].set_position(5.6,YBottom,-4.1);
     spheres[5].set_radius(0.35);
     spheres[5].set_colour(0.8,0.7,0.3);
-    spheres[5].set_position(6.2,YBottom,-4.3);
+    spheres[5].set_position(6.2,YBottom,-4.9);
     spheres[6].set_radius(0.6);
     spheres[6].set_colour(0.2,0.1,0.3);
     spheres[6].set_position(8,YBottom,-3.7);
@@ -815,11 +824,11 @@ int main(int argc,char** argv)
     spheres[8].set_radius(0.6);
     spheres[9].set_position(4.5,YBottom,-6);
     spheres[9].set_colour(0.1,0.8,0.1);
-    spheres[9].set_radius(0.8);
+    spheres[9].set_radius(0.5);
     spheres[10].set_position(7,YBottom,-4.6);
     spheres[10].set_colour(0.7,0.3,0.4);
     spheres[10].set_radius(0.5);
-    spheres[11].set_position(9.5,YBottom,-3.4);
+    spheres[11].set_position(9.5,YBottom,-2.9);
     spheres[11].set_colour(0.4,0.7,0.8);
     spheres[11].set_radius(0.5);
     spheres[12].set_position(-0.2,YBottom,-5.3);
