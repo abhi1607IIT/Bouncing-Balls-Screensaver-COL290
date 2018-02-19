@@ -541,9 +541,6 @@ void reshape(GLsizei width,GLsizei height)
 {
     if(height==0) height = 1;
     aspect = (GLfloat)width/(GLfloat) height;
-
-    glViewport(0,0,width,height);
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     if(width>height)
@@ -760,7 +757,6 @@ void specialKeys( int key, int x, int y )
         if(bselected <0) bselected = count - 1;
         usleep(1000);
     }
- 
 
   glutPostRedisplay();
  
@@ -796,6 +792,10 @@ void normalKeys(unsigned char key, int x, int y) {
     {
         g = !g;
     }
+    else if(key==27)
+    {
+        glutReshapeWindow(1920,1080);
+    }
 }
 int main(int argc,char** argv)
 {
@@ -817,6 +817,7 @@ int main(int argc,char** argv)
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
     glutCreateWindow("Bouncing Ball");
+    glutFullScreen();
     for(int i=0;i<count;i++)
     {
         Ball.makeBall(xeye);
