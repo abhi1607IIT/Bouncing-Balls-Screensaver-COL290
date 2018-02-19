@@ -12,7 +12,8 @@
 
 using namespace std;
 #define pi 3.14159
-#define step 0.0005
+#define step 0.0001
+#define delta 0.005
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 0.0f };
 const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -111,7 +112,7 @@ Image:: Image(const char *filename) {
 
     // we're done.
 } 
-
+GLfloat ballRadius = 0.3f;
 
 // Load Bitmaps And Convert To Textures
 void LoadGLTextures(string path, int k) { 
@@ -139,6 +140,7 @@ void LoadGLTextures(string path, int k) {
 };
 uniform_real_distribution <float> lrand(-1.0,1.0);
 default_random_engine generator;
+int bselected = -1;
 class Balls
 {
     GLint count ;
@@ -160,12 +162,12 @@ public:
         ballX.push_back(lrand(generator));
         ballY.push_back(lrand(generator));
         ballZ.push_back(-4 + 2 * lrand(generator));
-        vx.push_back(lrand(generator)/13);
-        vy.push_back(lrand(generator)/13);
-        vz.push_back(lrand(generator)/13);
-        r.push_back(0.5 + lrand(generator)/2);
-        b.push_back(0.5 + lrand(generator)/2);
-        g.push_back(0.5 + lrand(generator)/2);
+        vx.push_back(lrand(generator)/20);
+        vy.push_back(lrand(generator)/20);
+        vz.push_back(lrand(generator)/20);
+        r.push_back(0.5 + 2*lrand(generator)/5);
+        b.push_back(0.5 + 2*lrand(generator)/5);
+        g.push_back(0.5 + 2*lrand(generator)/5);
     }
     GLfloat get_x(GLint i)
     {
@@ -191,6 +193,30 @@ public:
     {
         return vz[i];
     }
+    void set_x(GLint i,GLfloat xp)
+    {
+        ballX[i] = xp;
+    }
+    void set_y(GLint i,GLfloat yp)
+    {
+        ballY[i] = yp;
+    }
+    void set_z(GLint i,GLfloat zp)
+    {
+        ballZ[i] = zp;
+    }
+    void set_vx(GLint i,GLfloat xv)
+    {
+        vx[i] = xv;
+    }
+    void set_vy(GLint i,GLfloat yv)
+    {
+        vy[i] = yv;
+    }
+    void set_vz(GLint i,GLfloat zv)
+    {
+        vz[i] = zv;
+    }
     GLfloat get_r(GLint i)
     {
         return r[i];
@@ -202,6 +228,21 @@ public:
     GLfloat get_b(GLint i)
     {
         return b[i];
+    }
+    void DrawBall(int j,GLfloat xeye)
+    {
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(xeye,0,0,xeye,0,-2,0,400,0);
+        glTranslatef(ballX[j],ballY[j],ballZ[j]);
+        if(j==bselected)
+        {
+            glColor4f(0.9,0.9,0.9,1);
+        }
+        else glColor4f(r[j],g[j],b[j],1); 
+        glutSolidSphere(ballRadius,30,30);
+        glFlush();
+        glEnd();
     }
 };
 /*class ConeObject
@@ -279,12 +320,10 @@ public:
 };
 Balls Ball;
 int count = 5;
-GLfloat ballRadius = 0.3f;
-GLfloat ballX[5],ballY[5],ballZ[5],xspeed[5],yspeed[5],zspeed[5],red[5],green[5],blue[5];
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,xeye = 0,aspect = 1;
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,xeye = 0,aspect = 1,vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
 GLint refreshmillis = 30;
 GLfloat normal[3];
-bool flag = true;
+bool flag = true,play = true;
 GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -6;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
@@ -311,39 +350,39 @@ void initGL()
 }
 GLfloat sdistance(int i,int j)
 {
-    return((ballX[i]-ballX[j])*(ballX[i]-ballX[j]) + (ballY[i]-ballY[j])*(ballY[i]-ballY[j]) + (ballZ[i]-ballZ[j])*(ballZ[i]-ballZ[j]));
+    return((Ball.get_x(i)-Ball.get_x(j))*(Ball.get_x(i)-Ball.get_x(j)) + (Ball.get_y(i)-Ball.get_y(j))*(Ball.get_y(i)-Ball.get_y(j)) + (Ball.get_z(i)-Ball.get_z(j))*(Ball.get_z(i)-Ball.get_z(j)));
 }
 void ncap(int i,int j,GLfloat d)
 {
-    normal[0] = (ballX[i] - ballX[j])/ d;
-    normal[1] = (ballY[i] - ballY[j])/ d;
-    normal[2] = (ballZ[i] - ballZ[j])/ d;
+    normal[0] = (Ball.get_x(i) - Ball.get_x(j))/ d;
+    normal[1] = (Ball.get_y(i) - Ball.get_y(j))/ d;
+    normal[2] = (Ball.get_z(i) - Ball.get_z(j))/ d;
     //cout<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<endl;
 }
 GLfloat vdot(int i)
 {
-    return normal[0]*xspeed[i] + normal[1]*yspeed[i] + normal[2]*zspeed[i];
+    return normal[0]*Ball.get_vx(i) + normal[1]*Ball.get_vy(i) + normal[2]*Ball.get_vz(i);
 }
 void collide(int i,int j)
 {
     while(sdistance(i,j)<ballRadius*ballRadius)
     {
-        ballX[i]-=step*xspeed[i];
-        ballX[j]-=step*xspeed[j];
-        ballY[i]-=step*yspeed[i];
-        ballY[j]-=step*yspeed[j];
-        ballZ[i]-=step*zspeed[i];
-        ballZ[j]-=step*zspeed[j];
+        Ball.set_x(i,Ball.get_x(i)-step*Ball.get_vx(i));
+        Ball.set_x(j,Ball.get_x(j)-step*Ball.get_vx(j));
+        Ball.set_y(i,Ball.get_y(i)-step*Ball.get_vy(i));
+        Ball.set_y(j,Ball.get_y(j)-step*Ball.get_vy(j));
+        Ball.set_z(i,Ball.get_z(i)-step*Ball.get_vz(i));
+        Ball.set_z(j,Ball.get_z(j)-step*Ball.get_vz(j));
     }
     ncap(i,j,sqrt(sdistance(i,j)));
     GLfloat n1 = vdot(i),n2 = vdot(j);
     //cout<<"Done"<<endl;
-    xspeed[i] = xspeed[i] + (n2 - n1 )*normal[0];
-    yspeed[i] =  yspeed[i] + (n2 - n1 )*normal[1];
-    zspeed[i] =  zspeed[i] + (n2 - n1 )*normal[2];
-    xspeed[j] =  xspeed[j] + (n1 - n2 )*normal[0];
-    yspeed[j] =  yspeed[j] + (n1 - n2 )*normal[1];
-    zspeed[j] =  zspeed[j] + (n1 - n2 )*normal[2];
+    Ball.set_vx(i,Ball.get_vx(i) + (n2 - n1 )*normal[0]);
+    Ball.set_vy(i,Ball.get_vy(i) + (n2 - n1 )*normal[1]);
+    Ball.set_vz(i,Ball.get_vz(i) + (n2 - n1 )*normal[2]);
+    Ball.set_vx(j,Ball.get_vx(j) + (n1 - n2 )*normal[0]);
+    Ball.set_vy(j,Ball.get_vy(j) + (n1 - n2 )*normal[1]);
+    Ball.set_vz(j,Ball.get_vz(j) + (n1 - n2 )*normal[2]);
    // cout<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<endl<<endl;
 }
 GLfloat snormal[3];
@@ -354,22 +393,22 @@ void s_object_collision(int i,int j)
     GLfloat z = spheres[j].get_z();
     GLfloat rs = spheres[j].get_radius();
     //cout<<"Oh Yeah"<<endl;
-    GLfloat d = sqrt((x - ballX[i])*(x - ballX[i]) + (y - ballY[i])*(y - ballY[i]) + (z - ballZ[i])*(z - ballZ[i]));
+    GLfloat d = sqrt((x - Ball.get_x(i))*(x - Ball.get_x(i)) + (y - Ball.get_y(i))*(y - Ball.get_y(i)) + (z - Ball.get_z(i))*(z - Ball.get_z(i)));
     if(d<(rs + ballRadius))
     {
         //cout<<"Yeah"<<endl;
-        snormal[0] = (x-ballX[i])/d;
-        snormal[1] = (y-ballY[i])/d;
-        snormal[2] = (z-ballZ[i])/d;
-        GLfloat dprod = xspeed[i]*snormal[0] + yspeed[i]*snormal[1] + zspeed[i]*snormal[2];
-        xspeed[i] = xspeed[i] - 2*dprod*snormal[0];
-        yspeed[i] = yspeed[i] - 2*dprod*snormal[1];
-        zspeed[i] = zspeed[i] - 2*dprod*snormal[2];
-        while((x - ballX[i])*(x - ballX[i]) + (y - ballY[i])*(y - ballY[i]) + (z - ballZ[i])*(z - ballZ[i])<(rs+ballRadius)*(rs + ballRadius))
+        snormal[0] = (x-Ball.get_x(i))/d;
+        snormal[1] = (y-Ball.get_y(i))/d;
+        snormal[2] = (z-Ball.get_z(i))/d;
+        GLfloat dprod = Ball.get_vx(i)*snormal[0] + Ball.get_vy(i)*snormal[1] + Ball.get_vz(i)*snormal[2];
+        Ball.set_vx(i,Ball.get_vx(i) - 2*dprod*snormal[0]);
+        Ball.set_vy(i,Ball.get_vy(i) - 2*dprod*snormal[1]);
+        Ball.set_vz(i,Ball.get_vz(i) - 2*dprod*snormal[2]);
+        while((x - Ball.get_x(i))*(x - Ball.get_x(i)) + (y - Ball.get_y(i))*(y - Ball.get_y(i)) + (z - Ball.get_z(i))*(z - Ball.get_z(i))<(rs+ballRadius)*(rs + ballRadius))
         {
-            ballX[i] = ballX[i] +step*xspeed[i];
-            ballY[i] = ballY[i] +step*yspeed[i];
-            ballZ[i] = ballZ[i] +step*zspeed[i];
+            Ball.set_x(i,Ball.get_x(i) +step*Ball.get_vx(i));
+            Ball.set_y(i,Ball.get_y(i) +step*Ball.get_vy(i));
+            Ball.set_z(i,Ball.get_z(i) +step*Ball.get_vz(i));
         }
     }
 }
@@ -456,20 +495,15 @@ void display()
     glDisable(GL_TEXTURE_2D);
     for(int j=0;j<5;j++)
     {
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        gluLookAt(xeye,0,0,xeye,0,-2,0,1,0);
-        glTranslatef(ballX[j],ballY[j],ballZ[j]);
-        glColor4f(red[j],green[j] ,blue[j],1);
-        glScalef(1.0,1.0,1.0);
-        glutSolidSphere(ballRadius,30,30);
-        glFlush();
-        glEnd();
+        Ball.DrawBall(j,xeye);
     }
     for(int j=0;j<8;j++) spheres[j].draw_sphere(xeye);
     glutSwapBuffers();
-    if(flag) xeye+=0.01;
-    else xeye -=0.01;
+    if(play)
+    {
+        if(flag) xeye+=0.01;
+        else xeye -=0.01;
+    }
     if(xeye<0)
     {
         flag = true;
@@ -535,55 +569,50 @@ GLint windowPosy = 300;
 void *bball(void* j)
 {
     int i = (long long int) j;
-    ballX[i] = Ball.get_x(i);
-    ballY[i] = Ball.get_y(i);
-    ballZ[i] = Ball.get_z(i);
-    xspeed[i] = Ball.get_vx(i);
-    yspeed[i] = Ball.get_vy(i);
-    zspeed[i] = Ball.get_vz(i);
-    red[i] = Ball.get_r(i);
-    green[i] = Ball.get_g(i);
-    blue[i] = Ball.get_b(i);
     while(true)
     {   
-        ballX[i]+=xspeed[i];
-        ballY[i]+=yspeed[i];
-        ballZ[i]+=zspeed[i];
-        if(ballX[i]>ballXMax)
+        if(play)
         {
-            ballX[i] = ballXMax;
-            xspeed[i] = -xspeed[i];
+            Ball.set_x(i,Ball.get_x(i)+Ball.get_vx(i));
+            Ball.set_y(i,Ball.get_y(i)+Ball.get_vy(i));
+            Ball.set_z(i,Ball.get_z(i)+Ball.get_vz(i));
         }
-        else if(ballX[i]<ballXMin)
+        if(Ball.get_x(i)>ballXMax)
         {
-            ballX[i] = ballXMin;
-            xspeed[i] = -xspeed[i];
+            Ball.set_x(i,ballXMax) ;
+            Ball.set_vx(i,-1*Ball.get_vx(i));
         }
-        if(ballY[i]>ballYMax)
+        else if(Ball.get_x(i)<ballXMin)
         {
-            ballY[i] = ballYMax;
-            yspeed[i] = -yspeed[i];
+            Ball.set_x(i,ballXMin);
+            Ball.set_vx(i,-1*Ball.get_vx(i));
         }
-        else if(ballY[i]<ballYMin)
+        if(Ball.get_y(i)>ballYMax)
         {
-            ballY[i] = ballYMin;
-            yspeed[i] = -yspeed[i];
+            Ball.set_y(i,ballYMax);
+            Ball.set_vy(i,-1*Ball.get_vy(i));
         }
-        if(ballZ[i]>ballZMax)
+        else if(Ball.get_y(i)<ballYMin)
         {
-            ballZ[i] = ballZMax;
-            zspeed[i] = -zspeed[i];
+            Ball.set_y(i,ballYMin);
+            Ball.set_vy(i,-1*Ball.get_vy(i));
         }
-        else if(ballZ[i]<ballZMin)
+        if(Ball.get_z(i)>ballZMax)
         {
-            ballZ[i] = ballZMin;
-            zspeed[i] = -zspeed[i];
+            Ball.set_z(i,ballZMax);
+            Ball.set_vz(i,-1*Ball.get_vz(i));
+        }
+        else if(Ball.get_z(i)<ballZMin)
+        {
+            Ball.set_z(i,ballZMin);
+            Ball.set_vz(i,-Ball.get_vz(i));
         }
         for(int k=0;k<8;k++)
         {
             s_object_collision(i,k);
         }
         pthread_barrier_wait(&barrier);
+        //cout<<"Passed the barrier";
         pthread_mutex_lock(&mutex);
         for(int k = i+1;k<5;k++)
         {
@@ -597,6 +626,95 @@ void *bball(void* j)
         usleep(20000);
     }
     
+}
+void specialKeys( int key, int x, int y ) 
+{
+    if (key == GLUT_KEY_RIGHT)
+    {
+        if(bselected<0) return;
+        else
+        {
+            if(Ball.get_vx(bselected)<0&&Ball.get_vx(bselected)>-vxmax)
+            {
+                Ball.set_vx(bselected,Ball.get_vx(bselected)-delta);
+            }
+            else if(Ball.get_vx(bselected)>0&&Ball.get_vx(bselected)<vxmax)
+            {
+                Ball.set_vx(bselected,Ball.get_vx(bselected)+delta);
+            }
+            if(Ball.get_vy(bselected)<0&&Ball.get_vy(bselected)>-vymax)
+            {
+                Ball.set_vy(bselected,Ball.get_vy(bselected)-delta);
+            }
+            else if(Ball.get_vy(bselected)>0&&Ball.get_vy(bselected)<vymax)
+            {
+                Ball.set_vy(bselected,Ball.get_vy(bselected)+delta);
+            }
+            if(Ball.get_vz(bselected)<0&&Ball.get_vz(bselected)>-vzmax)
+            {
+                Ball.set_vz(bselected,Ball.get_vz(bselected)-delta);
+            }
+            else if(Ball.get_vz(bselected)>0&&Ball.get_vz(bselected)<vzmax)
+            {
+                Ball.set_vz(bselected,Ball.get_vz(bselected)+delta);
+            }
+        }
+    }
+    else if (key == GLUT_KEY_LEFT)
+    { 
+        if(bselected<0) return;
+        else
+        {
+            if(Ball.get_vx(bselected)<0&&Ball.get_vx(bselected)>-vxmax)
+            {
+                Ball.set_vx(bselected,Ball.get_vx(bselected)+delta);
+            }
+            else if(Ball.get_vx(bselected)>0&&Ball.get_vx(bselected)<vxmax)
+            {
+                Ball.set_vx(bselected,Ball.get_vx(bselected)-delta);
+            }
+            if(Ball.get_vy(bselected)<0&&Ball.get_vy(bselected)>-vymax)
+            {
+                Ball.set_vy(bselected,Ball.get_vy(bselected)+delta);
+            }
+            else if(Ball.get_vy(bselected)>0&&Ball.get_vy(bselected)<vymax)
+            {
+                Ball.set_vy(bselected,Ball.get_vy(bselected)-delta);
+            }
+            if(Ball.get_vz(bselected)<0&&Ball.get_vz(bselected)>-vzmax)
+            {
+                Ball.set_vz(bselected,Ball.get_vz(bselected)+delta);
+            }
+            else if(Ball.get_vz(bselected)>0&&Ball.get_vz(bselected)<vzmax)
+            {
+                Ball.set_vz(bselected,Ball.get_vz(bselected)-delta);
+            }
+        }
+    }
+    else if(key== GLUT_KEY_UP)
+    {
+        bselected++;
+        if(bselected == count) bselected = 0;
+       usleep(1000);
+   }
+    else if(key== GLUT_KEY_DOWN)
+    {
+        bselected--;
+        if(bselected <0) bselected = count - 1;
+        usleep(1000);
+    }
+ 
+
+  glutPostRedisplay();
+ 
+}
+
+void normalKeys(unsigned char key, int x, int y) {
+    if (key == ' ')
+    {
+        play = !play;
+        usleep(1000);
+    } 
 }
 int main(int argc,char** argv)
 {
@@ -613,36 +731,6 @@ int main(int argc,char** argv)
     {
         Ball.makeBall();
     }
-    /*balls[0].set_x(0.3);
-    balls[0].set_y(0.4);
-    balls[0].set_z(-5);
-    balls[1].set_x(-0.3);
-    balls[1].set_y(0.4);
-    balls[1].set_z(-4.9);
-    balls[2].set_x(0);
-    balls[2].set_y(0.5);
-    balls[2].set_z(-6.8);
-    balls[3].set_x(0.9);
-    balls[3].set_y(0.5);
-    balls[3].set_z(-3);
-    balls[4].set_x(-0.3);
-    balls[3].set_y(-0.2);
-    balls[3].set_z(-5.5);
-    balls[0].set_vx(-0.03);
-    balls[1].set_vx(0.03);
-    balls[2].set_vx(0.06);
-    balls[3].set_vx(-0.04);
-    balls[4].set_vx(0.03);
-    balls[0].set_vy(-0.04);
-    balls[1].set_vy(-0.04);
-    balls[2].set_vy(-0.05);
-    balls[3].set_vy(0.03);
-    balls[4].set_vy(-0.03);
-    balls[0].set_vz(0.07);
-    balls[1].set_vz(0.02);
-    balls[2].set_vz(-0.06);
-    balls[3].set_vz(0.06);
-    balls[4].set_vz(-0.02);*/
     spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
     spheres[0].set_position(1,YBottom,-4);
@@ -680,6 +768,8 @@ int main(int argc,char** argv)
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutTimerFunc(0,Timer,0);
+    glutSpecialFunc(specialKeys);
+    glutKeyboardFunc(normalKeys);
     initGL();
     glutMainLoop();
     pthread_exit(&id[0]);
