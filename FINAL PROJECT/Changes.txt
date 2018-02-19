@@ -1,0 +1,13 @@
+Bouncing Ball ScreenSaver
+
+1. All the operations we mentioned in the design docs are now being performed by keyborad input
+   instead of having a gui as adviced by TA.
+
+2. Terrain is made using objects and not using heatmaps as we found difficulty in implementing 
+   the physics of the heatmap.
+
+Akshit Kansra
+2016CS0001
+
+Abhishek Gupta
+2016CSJ0012
