@@ -19,17 +19,15 @@ const GLfloat light_ambient2[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_ambient3[] = {0.2f, 0.5f, 0.6f, 0.0f};
 const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_specular2[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 const GLfloat light_position[] = { 2.0f, 5.0f, 2.0f, 0.0f };
 const GLfloat light_position2[]= { 0.0f,-4.0f, 0.0f, 0.0f};
 const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
+const GLfloat mat_ambient2[]   =  {0.0f, 0.0f, 0.0f, 0.0f };
 const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 100.0f };
 GLuint texture;
-
-
-
-
 struct Image {
     unsigned long sizeX;
     unsigned long sizeY;
@@ -317,14 +315,16 @@ public:
 
         glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient3);
         glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular2);
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient2);
         glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
         glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
         glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
         glColor4f(red,green,blue,1);
+        //glColor4f(1.0f,0.5f,0.0f,1.0f);
+        glTexCoord3f(radius,30,30);
         glutSolidSphere(radius,30,30);
         glFlush();
         glDisable(GL_LIGHT0);
@@ -345,7 +345,7 @@ SphereObject spheres[13];
 //sem_t mutex_rdcnt, mutex_wrcnt, mutex_3, w, r;
 void initGL()
 {   
-    LoadGLTextures("walls2.bmp",0);
+    LoadGLTextures("src/walls2.bmp",0);
     //LoadGLTextures("stone3.bmp",1);
  
     glEnable(GL_TEXTURE_2D);
@@ -800,6 +800,9 @@ void normalKeys(unsigned char key, int x, int y) {
 }
 int main(int argc,char** argv)
 {
+    cout<<argc<<endl;
+    cout<<argv[0]<<endl;
+    count=stoi(argv[2]);
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
@@ -812,7 +815,6 @@ int main(int argc,char** argv)
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
-    count = 5;
     int ret = pthread_barrier_init(&barrier,&attr,count);
     glutCreateWindow("Bouncing Ball");
     for(int i=0;i<count;i++)
