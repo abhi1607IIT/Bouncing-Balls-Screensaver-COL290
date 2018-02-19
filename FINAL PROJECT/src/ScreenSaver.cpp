@@ -799,9 +799,11 @@ void normalKeys(unsigned char key, int x, int y) {
 }
 int main(int argc,char** argv)
 {
-    cout<<argc<<endl;
-    cout<<argv[0]<<endl;
+    
     count=stoi(argv[2]);
+    if(count>30){
+        count=30;
+    }
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
