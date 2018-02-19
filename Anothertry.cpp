@@ -11,7 +11,7 @@
 #include <cstdlib>
 using namespace std;
 #define pi 3.14159
-#define step 0.0001
+#define step 0.01
 #define delta 0.005
 #define gravity 0.003
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -594,10 +594,10 @@ void Timer(GLint value)
     glutTimerFunc(refreshmillis,Timer,0);
 }
 
-GLint windowWidth = 640;
-GLint windowHeight = 480;
-GLint windowPosx = 300;
-GLint windowPosy = 300;
+GLint windowWidth = 1920;
+GLint windowHeight = 1080;
+GLint windowPosx = 0;
+GLint windowPosy = 0;
 
 void *bball(void* j)
 {
@@ -613,6 +613,30 @@ void *bball(void* j)
             Ball.set_x(i,Ball.get_x(i)+Ball.get_vx(i));
             Ball.set_y(i,Ball.get_y(i)+Ball.get_vy(i));
             Ball.set_z(i,Ball.get_z(i)+Ball.get_vz(i));
+        }
+        if(Ball.get_vx(i)>013)
+        {
+            Ball.set_vx(i,0.13);   
+        }
+        if(Ball.get_vx(i)<-0.13)
+        {
+            Ball.set_vx(i,-0.13);   
+        }
+        if(Ball.get_vy(i)>0.13)
+        {
+            Ball.set_vy(i,0.13);   
+        }
+        if(Ball.get_vy(i)<-0.13)
+        {
+            Ball.set_vy(i,-0.13);   
+        }
+        if(Ball.get_vz(i)>0.13)
+        {
+            Ball.set_vz(i,0.13);   
+        }
+        if(Ball.get_vz(i)<-0.13)
+        {
+            Ball.set_vz(i,-0.13);   
         }
         if(Ball.get_x(i)>ballXMax)
         {
@@ -757,7 +781,7 @@ void normalKeys(unsigned char key, int x, int y) {
     } 
     else if(key=='+')
     {
-        count++;
+        if(count<30) count++;
         Ball.makeBall(xeye);
         int ret = pthread_create(&id[count-1],NULL,bball,(void *) count-1);
     }
@@ -779,6 +803,7 @@ int main(int argc,char** argv)
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
+    cout<<argv[0]<<argv[1]<<endl;
     /*sem_init(&mutex_rdcnt, 0, 1);
     sem_init(&mutex_wrcnt, 0, 1);
     sem_init(&mutex_3, 0, 1);
