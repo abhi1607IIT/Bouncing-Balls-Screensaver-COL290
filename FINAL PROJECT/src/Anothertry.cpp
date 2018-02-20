@@ -9,7 +9,6 @@
 #include<unistd.h>
 #include<time.h>
 #include <cstdlib>
-#include "Image.h"
 using namespace std;
 #define pi 3.14159
 #define step 0.0001
@@ -29,7 +28,16 @@ const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 100.0f };
 GLuint texture;
-
+struct Image {
+    unsigned long sizeX;
+    unsigned long sizeY;
+    char *data;
+    Image(const char *filename);    
+    void SetSizeX(unsigned long i){sizeX = i;}
+    unsigned long GetSizeX(unsigned long i){return sizeX;}
+    unsigned long GetSizeY(unsigned long i){return sizeY;}
+    void SetSizeY(unsigned long i){sizeY = i;}
+};
 
 Image:: Image(const char *filename) {
     FILE *file;
@@ -337,7 +345,7 @@ SphereObject spheres[13];
 //sem_t mutex_rdcnt, mutex_wrcnt, mutex_3, w, r;
 void initGL()
 {   
-    LoadGLTextures("walls2.bmp",0);
+    LoadGLTextures("src/walls2.bmp",0);
     //LoadGLTextures("stone3.bmp",1);
  
     glEnable(GL_TEXTURE_2D);
@@ -768,6 +776,9 @@ void normalKeys(unsigned char key, int x, int y) {
 }
 int main(int argc,char** argv)
 {
+    cout<<argc<<endl;
+    cout<<argv[0]<<endl;
+    count=stoi(argv[2]);
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
@@ -779,7 +790,6 @@ int main(int argc,char** argv)
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
-    count = 5;
     int ret = pthread_barrier_init(&barrier,&attr,count);
     glutCreateWindow("Bouncing Ball");
     for(int i=0;i<count;i++)
