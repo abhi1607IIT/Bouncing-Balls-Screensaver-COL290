@@ -13,5 +13,6 @@ doc:./doc/COP290-Ass1-Doc.tex
 	pdflatex ./doc/COP290-Ass1-Doc.tex
 	rm diagram.jpg
 
+.PHONY : clean
 clean:
 	\rm -rf *.out *~ *.pdf *.aux *.log compile execute *.log
