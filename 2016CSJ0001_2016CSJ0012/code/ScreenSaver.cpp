@@ -345,7 +345,7 @@ SphereObject spheres[13];
 //sem_t mutex_rdcnt, mutex_wrcnt, mutex_3, w, r;
 void initGL()
 {   
-    LoadGLTextures("src/walls2.bmp",0);
+    LoadGLTextures("code/walls2.bmp",0);
     //LoadGLTextures("stone3.bmp",1);
  
     glEnable(GL_TEXTURE_2D);
