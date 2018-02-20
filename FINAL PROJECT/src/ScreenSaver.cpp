@@ -11,7 +11,7 @@
 #include <cstdlib>
 using namespace std;
 #define pi 3.14159
-#define step 0.0001
+#define step 0.01
 #define delta 0.005
 #define gravity 0.003
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -354,7 +354,7 @@ void initGL()
     glClearColor(0.0f,0.0f,0.0f,0.0f);
     glClearDepth(1.0);              // Enables Clearing Of The Depth Buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glEnable(GL_BLEND); //sachin
+    //glEnable(GL_BLEND);
     //glDepthFunc(GL_LESS);           // The Type Of Depth Test To Do
     glEnable(GL_DEPTH_TEST);        // Enables Depth Testing
     //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);    
@@ -426,8 +426,7 @@ void s_object_collision(int i,int j)
 }
 void DrawCube(void)
 {
-    //glDisable(GL_DEPTH_TEST);                   //sachin
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE); //sachin                   // Set The Blending Function For Translucency        
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE); 
     glBindTexture(GL_TEXTURE_2D, texture); 
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -435,20 +434,18 @@ void DrawCube(void)
     gluLookAt(xeye,0,zeye,xeye,0,zeye-2,0,400,0);
     glTranslatef(0.0,0.0,0.0);
     glEnable(GL_LIGHT0);
-        glEnable(GL_NORMALIZE);
-        glEnable(GL_COLOR_MATERIAL);
-        glEnable(GL_LIGHTING);
-
-        glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient2);
-        glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position2);
-
-        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
-        glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
-        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
-    glBegin(GL_QUADS);        // Draw The Cube Using quads
+    glEnable(GL_NORMALIZE);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
+    glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient2);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position2);
+    glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+    glBegin(GL_QUADS);       
     glColor4f(0.0f,1.0f,0.0f,1);    // Color Blue
     glTexCoord2f(1.0f, 0.0f);
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
@@ -495,11 +492,10 @@ void DrawCube(void)
     glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
     glDisable(GL_LIGHT0);
-  glEnd();            // End Drawing The Cube
-  
-//glFlush();
-  
+    glEnd();            
 }
+
+
 void display()
 {   
     glEnable(GL_TEXTURE_2D);
@@ -594,10 +590,10 @@ void Timer(GLint value)
     glutTimerFunc(refreshmillis,Timer,0);
 }
 
-GLint windowWidth = 640;
-GLint windowHeight = 480;
-GLint windowPosx = 300;
-GLint windowPosy = 300;
+GLint windowWidth = 1920;
+GLint windowHeight = 1080;
+GLint windowPosx = 0;
+GLint windowPosy = 0;
 
 void *bball(void* j)
 {
@@ -613,6 +609,30 @@ void *bball(void* j)
             Ball.set_x(i,Ball.get_x(i)+Ball.get_vx(i));
             Ball.set_y(i,Ball.get_y(i)+Ball.get_vy(i));
             Ball.set_z(i,Ball.get_z(i)+Ball.get_vz(i));
+        }
+        if(Ball.get_vx(i)>013)
+        {
+            Ball.set_vx(i,0.13);   
+        }
+        if(Ball.get_vx(i)<-0.13)
+        {
+            Ball.set_vx(i,-0.13);   
+        }
+        if(Ball.get_vy(i)>0.13)
+        {
+            Ball.set_vy(i,0.13);   
+        }
+        if(Ball.get_vy(i)<-0.13)
+        {
+            Ball.set_vy(i,-0.13);   
+        }
+        if(Ball.get_vz(i)>0.13)
+        {
+            Ball.set_vz(i,0.13);   
+        }
+        if(Ball.get_vz(i)<-0.13)
+        {
+            Ball.set_vz(i,-0.13);   
         }
         if(Ball.get_x(i)>ballXMax)
         {
@@ -648,7 +668,7 @@ void *bball(void* j)
         {
             s_object_collision(i,k);
         }
-        pthread_barrier_wait(&barrier);
+        //pthread_barrier_wait(&barrier);
         pthread_mutex_lock(&mutex);
         for(int k = i+1;k<count;k++)
         {
@@ -658,7 +678,7 @@ void *bball(void* j)
             }
         }
         pthread_mutex_unlock(&mutex);
-        pthread_barrier_wait(&barrier);
+        //pthread_barrier_wait(&barrier);
         usleep(20000);
     }
     
@@ -757,9 +777,12 @@ void normalKeys(unsigned char key, int x, int y) {
     } 
     else if(key=='+')
     {
-        count++;
-        Ball.makeBall(xeye);
-        int ret = pthread_create(&id[count-1],NULL,bball,(void *) count-1);
+        if(count<30) 
+        {   count++;
+            Ball.makeBall(xeye);
+            //pthread_barrier_init(&barrier,&attr,count);
+            int ret = pthread_create(&id[count-1],NULL,bball,(void *) count-1);
+        }
     }
     else if(key=='w')
     {
@@ -776,26 +799,28 @@ void normalKeys(unsigned char key, int x, int y) {
 }
 int main(int argc,char** argv)
 {
-    cout<<argc<<endl;
-    cout<<argv[0]<<endl;
+    
     count=stoi(argv[2]);
+    if(count>30){
+        count=30;
+    }
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
-    /*sem_init(&mutex_rdcnt, 0, 1);
-    sem_init(&mutex_wrcnt, 0, 1);
+    //pthread_barrier_init(&barrier,&attr,count);
+    /*sem_init(&mutex_1, 0, 1);
+    sem_init(&mutex_2, 0, 1);
     sem_init(&mutex_3, 0, 1);
     sem_init(&w, 0, 1);
     sem_init(&r, 0, 1);*/
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
-    int ret = pthread_barrier_init(&barrier,&attr,count);
     glutCreateWindow("Bouncing Ball");
     for(int i=0;i<count;i++)
     {
         Ball.makeBall(xeye);
-        ret = pthread_create(&id[i],NULL,bball,(void *) i);
+        int ret = pthread_create(&id[i],NULL,bball,(void *) i);
     }
     spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
