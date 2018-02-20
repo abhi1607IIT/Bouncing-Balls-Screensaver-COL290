@@ -9,6 +9,7 @@
 #include<unistd.h>
 #include<time.h>
 #include <cstdlib>
+#include "Image.h"
 using namespace std;
 #define pi 3.14159
 #define step 0.0001
@@ -21,24 +22,12 @@ const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_position[] = { 2.0f, 5.0f, 2.0f, 0.0f };
 const GLfloat light_position2[]= { 0.0f,-4.0f, 0.0f, 0.0f};
 const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
+const GLfloat mat_ambient2[]   =  {0.0f, 0.0f, 0.0f, 0.0f };
 const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 100.0f };
 GLuint texture;
 
-
-
-
-struct Image {
-    unsigned long sizeX;
-    unsigned long sizeY;
-    char *data;
-    Image(const char *filename);    
-    void SetSizeX(unsigned long i){sizeX = i;}
-    unsigned long GetSizeX(unsigned long i){return sizeX;}
-    unsigned long GetSizeY(unsigned long i){return sizeY;}
-    void SetSizeY(unsigned long i){sizeY = i;}
-};
 
 Image:: Image(const char *filename) {
     FILE *file;
@@ -254,7 +243,7 @@ public:
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
         if(j==bselected)
         {
-            glColor4f(0.9,0.9,0.9,1);
+            glColor4f(1.0,1.0,1.0,1);
         }
         else glColor4f(r[j],g[j],b[j],1); 
         glutSolidSphere(ballRadius,30,30);
@@ -345,10 +334,18 @@ public:
         glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
         glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
         glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
-        glColor4f(red,green,blue,1);
+        //glColor4f(red,green,blue,1);
+        glEnable(GL_TEXTURE_2D);
+        glColor4f(1.0f,0.5f,0.0f,1.0f);
+        glTexCoord3f(radius,30,30);
+       // glTexCoord2f(x+radius,z+radius);
+       // glTexCoord2f(x+radius,z -radius);
+       // glTexCoord2f(x-radius,z + radius);
+       // glTexCoord2f(x-radius,z -radius);
         glutSolidSphere(radius,30,30);
         glFlush();
         glDisable(GL_LIGHT0);
+       // glDisable(GL_TEXTURE_2D);
         glEnd();  
     }
 };
