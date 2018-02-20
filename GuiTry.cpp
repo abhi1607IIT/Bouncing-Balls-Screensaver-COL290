@@ -25,6 +25,7 @@ const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 100.0f };
 GLuint texture;
+GLUquadric *quad;
 
 
 
@@ -239,7 +240,7 @@ public:
         glEnable(GL_NORMALIZE);
         glEnable(GL_COLOR_MATERIAL);
         glEnable(GL_LIGHTING);
-
+        gluQuadricTexture(quad,0);
         glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
         glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
         glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
@@ -382,6 +383,14 @@ void initGL()
     //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);    
 
     glShadeModel(GL_SMOOTH);
+    quad = gluNewQuadric();                                // Create A New Quadratic
+    gluQuadricNormals(quad, GL_SMOOTH);                    // Generate Smooth Normals For The Quad
+    gluQuadricTexture(quad, GL_TRUE);                      // Enable Texture Coords For The Quad
+
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);    // Set Up Sphere Mapping
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);    // Set Up Sphere Mapping    
+    
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 }
 GLfloat sdistance(int i,int j)
 {
@@ -473,49 +482,49 @@ void DrawCube(void)
         glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
     glBegin(GL_QUADS);        // Draw The Cube Using quads
     glColor4f(0.0f,1.0f,0.0f,1);    // Color Blue
-    glTexCoord2f(1.0f, 0.0f);
+    //glTexCoord2f(1.0f, 0.0f);
     glVertex3f( XRight,YTop,ZBack);    // Top Right Of The Quad (Top)
-    glTexCoord2f(1.0f, 1.0f);
+    //glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Top)
-    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZFront);    // Bottom Left Of The Quad (Top)
-    glTexCoord2f(0.0f, 0.0f);
+    //glTexCoord2f(0.0f, 0.0f);
     glVertex3f( XRight,YTop,ZFront);    // Bottom Right Of The Quad (Top)
     glColor4f(1.0f,0.5f,0.0f,1);    // Color Orange
-    glTexCoord2f(1.0f, 0.0f);
+    //glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZFront);    // Top Right Of The Quad (Bottom)
-    glTexCoord2f(1.0f, 1.0f);
+    //glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZFront);    // Top Left Of The Quad (Bottom)
-    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Bottom)
-    glTexCoord2f(0.0f, 0.0f);
+    //glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Bottom)
     glColor4f(1.0f,1.0f,0.0f,1);    // Color Yellow
-    glTexCoord2f(1.0f, 0.0f);
+    //glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Top Right Of The Quad (Back)
-    glTexCoord2f(1.0f, 1.0f);
+    //glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZBack);    // Top Left Of The Quad (Back)
-    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZBack);    // Bottom Left Of The Quad (Back)
-    glTexCoord2f(0.0f, 0.0f);
+    //glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YTop,ZBack);    // Bottom Right Of The Quad (Back)
     glColor4f(0.0f,0.0f,1.0f,1);    // Color Blue
-    glTexCoord2f(1.0f, 0.0f);
+    //glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XLeft,YTop,ZFront);    // Top Right Of The Quad (Left)
-    glTexCoord2f(1.0f, 1.0f);
+    //glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XLeft,YTop,ZBack);    // Top Left Of The Quad (Left)
-    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XLeft,YBottom,ZBack);    // Bottom Left Of The Quad (Left)
-    glTexCoord2f(0.0f, 0.0f);
+    //glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XLeft,YBottom,ZFront);    // Bottom Right Of The Quad (Left)
     glColor4f(1.0f,0.0f,1.0f,1);    // Color Violet
-    glTexCoord2f(1.0f, 0.0f);
+    //glTexCoord2f(1.0f, 0.0f);
     glVertex3f(XRight,YTop,ZBack);    // Top Right Of The Quad (Right)
-    glTexCoord2f(1.0f, 1.0f);
+    //glTexCoord2f(1.0f, 1.0f);
     glVertex3f(XRight,YTop,ZFront);    // Top Left Of The Quad (Right)
-    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 1.0f);
     glVertex3f(XRight,YBottom,ZFront);    // Bottom Left Of The Quad (Right)
-    glTexCoord2f(0.0f, 0.0f);
+    //glTexCoord2f(0.0f, 0.0f);
     glVertex3f(XRight,YBottom,ZBack);    // Bottom Right Of The Quad (Right)
     glDisable(GL_LIGHT0);
   glEnd();            // End Drawing The Cube
