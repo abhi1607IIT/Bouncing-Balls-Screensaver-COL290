@@ -20,6 +20,7 @@ const GLfloat light_ambient2[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_ambient3[] = {0.2f, 0.5f, 0.6f, 0.0f};
 const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_specular2[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 const GLfloat light_position[] = { 2.0f, 5.0f, 2.0f, 0.0f };
 const GLfloat light_position2[]= { 0.0f,-4.0f, 0.0f, 0.0f};
 const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -306,25 +307,19 @@ public:
 
         glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient3);
         glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular2);
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
+        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient2);
         glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
         glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
         glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
-        //glColor4f(red,green,blue,1);
-        glEnable(GL_TEXTURE_2D);
-        glColor4f(1.0f,0.5f,0.0f,1.0f);
+        glColor4f(red,green,blue,1);
+        //glColor4f(1.0f,0.5f,0.0f,1.0f);
         glTexCoord3f(radius,30,30);
-       // glTexCoord2f(x+radius,z+radius);
-       // glTexCoord2f(x+radius,z -radius);
-       // glTexCoord2f(x-radius,z + radius);
-       // glTexCoord2f(x-radius,z -radius);
         glutSolidSphere(radius,30,30);
         glFlush();
         glDisable(GL_LIGHT0);
-       // glDisable(GL_TEXTURE_2D);
         glEnd();  
     }
 };
