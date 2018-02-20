@@ -107,7 +107,8 @@ Image:: Image(const char *filename) {
 GLfloat ballRadius = 0.18f;
 
 // Load Bitmaps And Convert To Textures
-void LoadGLTextures(string path, int k) { 
+void LoadGLTextures(string path, int k) 
+{ 
     // Load Texture
     Image *image = new Image(path.c_str());
     
@@ -148,10 +149,10 @@ public:
     {
         count = 0;
     }
-    void makeBall()
+    void makeBall(GLfloat xeye)
     {
         count++;
-        ballX.push_back(lrand(generator));
+        ballX.push_back(xeye + lrand(generator));
         ballY.push_back(lrand(generator));
         ballZ.push_back(-4 + 2 * lrand(generator));
         vx.push_back(lrand(generator)/20);
@@ -221,7 +222,7 @@ public:
     {
         return b[i];
     }
-    void DrawBall(int j,GLfloat xeye)
+    void DrawBall(int j,GLfloat xeye,GLfloat zeye)
     {
         glMatrixMode(GL_MODELVIEW);
         glEnable(GL_LIGHT0);
@@ -239,7 +240,7 @@ public:
         glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
         glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
         glLoadIdentity();
-        gluLookAt(xeye,0,0,xeye,0,-2,0,400,0);
+        gluLookAt(xeye,0,zeye,xeye,0,zeye-2,0,400,0);
         glTranslatef(ballX[j],ballY[j],ballZ[j]);
         if(j==bselected)
         {
@@ -253,29 +254,6 @@ public:
         glEnd();
     }
 };
-/*class ConeObject
-{
-    GLfloat radius,height;
-    GLfloat red,green,blue;
-    GLfloat x,y,z;
-public:
-    ConeObject(GLfloat x)
-    {
-        radius = x;
-        height = x;
-    }
-    void set_colour(GLfloat r,GLfloat g,GLfloat b)
-    {
-        red = r;
-        green = g;
-        blue = b;
-    }
-    void set_position(GLfloat x1,GLfloat z1)
-    {
-        x = x1;
-        z = z1;
-    }
-};*/
 class SphereObject
 {
     GLfloat radius;
@@ -314,11 +292,11 @@ public:
     {
         return radius;
     }
-    void draw_sphere(GLfloat xeye)
+    void draw_sphere(GLfloat xeye,GLfloat zeye)
     {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        gluLookAt(xeye,0,0,xeye,0,-2,0,1,0);
+        gluLookAt(xeye,0,zeye,xeye,0,zeye-2,0,1,0);
         glTranslatef(x,y,z);
         glEnable(GL_LIGHT0);
         glEnable(GL_NORMALIZE);
@@ -350,8 +328,8 @@ public:
     }
 };
 Balls Ball;
-int count = 5;
-GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,xeye = 0,aspect = 1,vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
+int count;
+GLfloat ballXMax = 1, ballYMax = 1, ballXMin = -1 ,ballYMin = -1,ballZMax = -8, ballZMin = -12,zeye = 0,xeye = 0,aspect = 1,vxmax = 0.1,vymax = 0.1,vzmax = 0.1;
 GLint refreshmillis = 30;
 GLfloat normal[3];
 bool flag = true,play = true;
@@ -359,9 +337,8 @@ GLdouble XLeft,XRight,YTop,YBottom,ZFront = -2,ZBack = -6;
 pthread_barrier_t barrier,barrier2;
 pthread_barrierattr_t attr;
 pthread_mutex_t mutex;
-int ret = pthread_barrier_init(&barrier,&attr,5);
-SphereObject spheres[12];
-
+SphereObject spheres[13];
+//sem_t mutex_rdcnt, mutex_wrcnt, mutex_3, w, r;
 void initGL()
 {   
     LoadGLTextures("walls2.bmp",0);
@@ -428,7 +405,6 @@ void s_object_collision(int i,int j)
     GLfloat d = sqrt((x - Ball.get_x(i))*(x - Ball.get_x(i)) + (y - Ball.get_y(i))*(y - Ball.get_y(i)) + (z - Ball.get_z(i))*(z - Ball.get_z(i)));
     if(d<(rs + ballRadius))
     {
-        //cout<<"Yeah"<<endl;
         snormal[0] = (x-Ball.get_x(i))/d;
         snormal[1] = (y-Ball.get_y(i))/d;
         snormal[2] = (z-Ball.get_z(i))/d;
@@ -452,7 +428,7 @@ void DrawCube(void)
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(xeye,0,0,xeye,0,-2,0,400,0);
+    gluLookAt(xeye,0,zeye,xeye,0,zeye-2,0,400,0);
     glTranslatef(0.0,0.0,0.0);
     glEnable(GL_LIGHT0);
         glEnable(GL_NORMALIZE);
@@ -541,11 +517,11 @@ void display()
     ballXMax = XRight - ballRadius;
     DrawCube();
     glDisable(GL_TEXTURE_2D);
-    for(int j=0;j<5;j++)
+    for(int j=0;j<count;j++)
     {
-        Ball.DrawBall(j,xeye);
+        Ball.DrawBall(j,xeye,zeye);
     }
-    for(int j=0;j<8;j++) spheres[j].draw_sphere(xeye);
+    for(int j=0;j<13;j++) spheres[j].draw_sphere(xeye,zeye);
     glutSwapBuffers();
     if(play)
     {
@@ -600,6 +576,11 @@ void reshape(GLsizei width,GLsizei height)
     spheres[5].set_position(6.2,YBottom,-4.7);
     spheres[6].set_position(8,YBottom,-4.2);
     spheres[7].set_position(8.9,YBottom,-5);
+    spheres[8].set_position(10.4,YBottom,-4.8);
+    spheres[9].set_position(4.5,YBottom,-6);
+    spheres[10].set_position(7,YBottom,-5.2);
+    spheres[11].set_position(9.5,YBottom,-4.3);
+    spheres[12].set_position(-0.2,YBottom,-5.3);
 }
 
 
@@ -655,14 +636,13 @@ void *bball(void* j)
             Ball.set_z(i,ballZMin);
             Ball.set_vz(i,-Ball.get_vz(i));
         }
-        for(int k=0;k<8;k++)
+        for(int k=0;k<13;k++)
         {
             s_object_collision(i,k);
         }
         pthread_barrier_wait(&barrier);
-        //cout<<"Passed the barrier";
         pthread_mutex_lock(&mutex);
-        for(int k = i+1;k<5;k++)
+        for(int k = i+1;k<count;k++)
         {
             if(sdistance(i,k)<ballRadius*ballRadius)
             {
@@ -675,6 +655,7 @@ void *bball(void* j)
     }
     
 }
+pthread_t id[100];
 void specialKeys( int key, int x, int y ) 
 {
     if (key == GLUT_KEY_RIGHT)
@@ -766,55 +747,81 @@ void normalKeys(unsigned char key, int x, int y) {
     if(key=='?'){
         bselected=-1;
     } 
+    if(key=='+')
+    {
+        count++;
+        Ball.makeBall(xeye);
+        int ret = pthread_create(&id[count-1],NULL,bball,(void *) count-1);
+    }
+    if(key=='w')
+    {
+        if(zeye>-3.6) zeye-=0.1;
+    }
+    if(key=='s')
+    {
+        if(zeye<0.4) zeye+=0.1;
+    }
 }
 int main(int argc,char** argv)
 {
     time_t seconds;
     time(&seconds);
     glutInit(&argc,argv);
+    /*sem_init(&mutex_rdcnt, 0, 1);
+    sem_init(&mutex_wrcnt, 0, 1);
+    sem_init(&mutex_3, 0, 1);
+    sem_init(&w, 0, 1);
+    sem_init(&r, 0, 1);*/
     glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize(windowWidth , windowHeight);
     glutInitWindowPosition(windowPosx,windowPosy);
+    count = 5;
+    int ret = pthread_barrier_init(&barrier,&attr,count);
     glutCreateWindow("Bouncing Ball");
-    pthread_t id[count];
-    int j = 0;
-    for(int i=0;i<5;i++)
+    for(int i=0;i<count;i++)
     {
-        Ball.makeBall();
+        Ball.makeBall(xeye);
+        ret = pthread_create(&id[i],NULL,bball,(void *) i);
     }
     spheres[0].set_radius(0.4);
     spheres[0].set_colour(0.8,0.5,0.7);
-    spheres[0].set_position(1,YBottom,-4);
+    spheres[0].set_position(1,YBottom,-3);
     spheres[1].set_radius(0.3);
     spheres[1].set_colour(0.4,0.2,0.8);
-    spheres[1].set_position(2.3,YBottom,-4.8);
+    spheres[1].set_position(2.3,YBottom,-3.9);
     spheres[2].set_radius(0.268);
     spheres[2].set_colour(0.6,0.1,0.9);
     spheres[2].set_position(2.6,YBottom,-6);
     spheres[3].set_radius(0.5);
     spheres[3].set_colour(0.2,0.7,0.5);
-    spheres[3].set_position(3.7,YBottom,-3);
+    spheres[3].set_position(3.7,YBottom,-3.5);
     spheres[4].set_radius(0.7);
     spheres[4].set_colour(0.1,0.7,0.7);
-    spheres[4].set_position(5.6,YBottom,-5.5);
+    spheres[4].set_position(5.6,YBottom,-5.2);
     spheres[5].set_radius(0.35);
     spheres[5].set_colour(0.8,0.7,0.3);
-    spheres[5].set_position(6.2,YBottom,-4.7);
+    spheres[5].set_position(6.2,YBottom,-4.3);
     spheres[6].set_radius(0.6);
     spheres[6].set_colour(0.2,0.1,0.3);
-    spheres[6].set_position(8,YBottom,-4.2);
+    spheres[6].set_position(8,YBottom,-3.7);
     spheres[7].set_radius(0.5);
     spheres[7].set_colour(0.3,0.9,0.5);
     spheres[7].set_position(8.9,YBottom,-5);
-    pthread_create(&id[0],NULL,bball,(void *) j);
-    j = 1;
-    pthread_create(&id[1],NULL,bball,(void *) j);
-    j = 2;
-    pthread_create(&id[2],NULL,bball,(void *) j);
-    j = 3;
-    pthread_create(&id[3],NULL,bball,(void *) j);
-    j = 4;
-    pthread_create(&id[4],NULL,bball,(void *) j);
+    spheres[8].set_position(10.4,YBottom,-4.1);
+    spheres[8].set_colour(0.6,0.2,0.6);
+    spheres[8].set_radius(0.6);
+    spheres[9].set_position(4.5,YBottom,-6);
+    spheres[9].set_colour(0.1,0.8,0.1);
+    spheres[9].set_radius(0.8);
+    spheres[10].set_position(7,YBottom,-4.6);
+    spheres[10].set_colour(0.7,0.3,0.4);
+    spheres[10].set_radius(0.5);
+    spheres[11].set_position(9.5,YBottom,-3.4);
+    spheres[11].set_colour(0.4,0.7,0.8);
+    spheres[11].set_radius(0.5);
+    spheres[12].set_position(-0.2,YBottom,-5.3);
+    spheres[12].set_colour(0.8,0.4,0.1);
+    spheres[12].set_radius(0.7);
     glEnable(GL_DEPTH_TEST);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
@@ -823,7 +830,5 @@ int main(int argc,char** argv)
     glutKeyboardFunc(normalKeys);
     initGL();
     glutMainLoop();
-    pthread_exit(&id[0]);
-    pthread_exit(&id[1]);
     return 0;
 } 
